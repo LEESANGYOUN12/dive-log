@@ -150,9 +150,9 @@
 
   /* .chart-block:first-child .chart-label {padding-top: 24px;} */
   .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 12px;}
-  .chart-label {display: flex; align-items: flex-end; gap: 2px; color: var(--muted); margin-bottom: 12px; justify-content: center;}
-  .chart-label b {color: var(--text); font-weight: 700;}
-  .chart-label span {color: var(--muted); font-size: 10px; font-family: 'JetBrains Mono', monospace; position: relative; top: -1px;}
+  .chart-label {display: flex; align-items: center; gap: 2px; color: var(--muted); margin-bottom: 12px; justify-content: center;}
+  .chart-label b {color: var(--text); font-weight: 700; font-size: 16px;}
+  .chart-label span {color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; position: relative; top: 2px;}
   svg.chart {width: 100%; height: 110px; display: block; touch-action: pan-y;}
   .chart-time-axis {display: flex; justify-content: space-between; padding: 0 1% 0 4%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace;}
   .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
@@ -174,7 +174,7 @@
 
   body.has-bottom-bar {padding-bottom: 58px;}
   .bottom-stat-bar {position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: flex; justify-content: center; gap: 12px; padding: 8px var(--pd); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2);}
-  .bottom-stat-bar .bsb-item {flex:1; display: flex; flex-direction: column; align-items: center;  gap: 4px;}
+  .bottom-stat-bar .bsb-item {flex:1; display: flex; flex-direction: column; align-items: center;  gap: 2px;}
   .bottom-stat-bar .k {font-size: 11px; color: var(--muted); font-weight: 600;}
   .bottom-stat-bar .v {font-size: 16px; font-weight: 700; color: var(--purple);}
 
@@ -708,8 +708,8 @@ function svgChart(id, color, mode){
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="3.2" ry="3.2" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
-    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="10" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="10" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
   </svg>`;
 }
 
@@ -762,17 +762,17 @@ function renderInlineCharts(container, records){
   const fmtVs = CHART_DEFS.find(d=>d.key==='vSpeed').fmt;
   container.innerHTML = `
     <div class="vspeed-summary">
-      <div class="cell descent"><div class="k">평균 하강</div><div class="val mono">${fmtVs(vs.avgDescent)}</div></div>
-      <div class="cell descent"><div class="k">최대 하강</div><div class="val mono">${fmtVs(vs.maxDescent)}</div></div>
-      <div class="cell ascent"><div class="k">평균 상승</div><div class="val mono">${fmtVs(vs.avgAscent)}</div></div>
-      <div class="cell ascent"><div class="k">최대 상승</div><div class="val mono">${fmtVs(vs.maxAscent)}</div></div>
+      <div class="cell descent"><div class="k">평균 하강</div><div class="val">${fmtVs(vs.avgDescent)}</div></div>
+      <div class="cell descent"><div class="k">최대 하강</div><div class="val">${fmtVs(vs.maxDescent)}</div></div>
+      <div class="cell ascent"><div class="k">평균 상승</div><div class="val">${fmtVs(vs.avgAscent)}</div></div>
+      <div class="cell ascent"><div class="k">최대 상승</div><div class="val">${fmtVs(vs.maxAscent)}</div></div>
     </div>
     <div class="info-bar">
-      <div class="cell time"><div class="k">시간</div><div class="val mono" data-info="time">–</div></div>
-      <div class="cell depth"><div class="k">수심</div><div class="val mono" data-info="depth">–</div></div>
-      <div class="cell vs"><div class="k">속도</div><div class="val mono" data-info="vs">–</div></div>
-      <div class="cell temp"><div class="k">수온</div><div class="val mono" data-info="temp">–</div></div>
-      <div class="cell hr"><div class="k">심박</div><div class="val mono" data-info="hr">–</div></div>
+      <div class="cell time"><div class="k">시간</div><div class="val" data-info="time">–</div></div>
+      <div class="cell depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></div>
+      <div class="cell vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></div>
+      <div class="cell temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></div>
+      <div class="cell hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></div>
     </div>
     <div class="chart-block-wrap">
       ${CHART_DEFS.map(def=>`

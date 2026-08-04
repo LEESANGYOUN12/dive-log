@@ -1,0 +1,1083 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#f2f2f8">
+<title>Dive Log · 프리다이빙 분석</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='75' font-size='75'%3E%F0%9F%A4%BF%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#f2f2f8;
+    --ac-01 : #6449A1;
+    --ac-02 : #6BBDB9;
+    --panel:#ffffff;
+    --panel-2:#ffffff;
+    --line:rgba(30,20,60,0.07);
+    --text:#333;
+    --muted:#8b8aa3;
+    --muted-2:#b3b2c6;
+    --purple:#7c5cfc;
+    --purple-light:#efeafe;
+    --gold:#f6b93b;
+    --coral:#ff5c77;
+    --depth:#7c5cfc;
+    --ascent:#f6a623;
+    --temp:#ff7d54;
+    --hr:#ff5c77;
+    --accent:#7c5cfc;
+    --radius: 8px;
+    --pd: 60px;
+  }
+  @media (max-width: 1025px) {
+    :root {
+      --pd: 40px;
+    }
+  }
+  @media (max-width: 760px) {
+    :root {
+      --pd: 20px;
+    }
+  }
+  * {box-sizing: border-box; margin: 0; padding: 0; outline: none; border: none; list-style: none; text-decoration: none; -webkit-tap-highlight-color: transparent;}
+  html {-webkit-text-size-adjust: 100%;}
+  a {color: inherit;}
+  button, input, select, textarea {font: inherit; color: inherit; background: none; appearance: none;}
+  button {cursor: pointer;}
+  img,svg {display: block; max-width: 100%;}
+  table {border-collapse: collapse; border-spacing: 0;}
+  body {background: var(--bg); font-family: 'Pretendard Variable','Pretendard',system-ui,sans-serif; color: var(--text); min-height: 100vh; word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-size: 14px; font-weight: 500;}
+  .app {display: flex; flex-direction: column; min-height: 100vh;
+    header {padding: 20px var(--pd);  border-bottom: 1px solid var(--ac-01);
+      .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
+      h1 svg {width: 120px; height: auto;}
+      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius);}
+      label input {display: none;}
+      label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
+    }
+    main {flex: 1; padding: 0 var(--pd) 60px var(--pd);
+      .inner {max-width: 900px; margin: 0 auto;}
+    }
+    footer {padding: 24px var(--pd); border-top: 1px solid #999;
+      p {color: #666; font-size: 12px; text-align: center;}
+      p.copyright {color: #999; margin-top: 4px;}
+    }
+  }
+
+  @media (max-width: 760px) {
+    .app header {padding: 12px var(--pd);}
+    .app header h1 svg {width: 110px;}
+  }
+
+
+
+  .mono {font-family: 'JetBrains Mono', monospace;}
+
+
+/*   @media (max-width: 1024px) {
+    .app {padding: 0 40px;}
+  }
+  @media (max-width: 760px) {
+    .app {padding: 0 20px;
+      header h1 svg {width: 120px;}
+    }
+
+  } */
+
+  .section-title {font-size: 20px; font-weight: 700; color: var(--ac-01); margin: 24px 0 16px 0; display: flex; justify-content: space-between; align-items: center; letter-spacing: -1px;}
+  .section-title .reset-link {font-size: 13px; font-weight: 400; cursor: pointer; padding: 6px 12px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
+  .data-none {padding: 24px; text-align: center; color: var(--ac-02); background: #fff; border-radius: var(--radius); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer; border: 2px dashed var(--ac-02);}
+  .data-none:hover {border-color: var(--ac-01); color: var(--ac-01);}
+
+   /* .dropzone {padding: 24px 12px; margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; border: 2px dashed rgba(124,92,252,.3); cursor: pointer; border-radius: var(--radius); background: #fff;}
+  .dropzone:hover {border-color: var(--ac-02); background: #fff;}
+  .dropzone.drag-over {border-color: var(--purple);;}
+  .dropzone .plus-btn {font-weight: 600; background: var(--purple); border: none; color: #fff; padding: 11px 22px; border-radius: var(--radius); box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
+  .dropzone p {color: #999; font-size: 13px;}
+  input[type=file] {display: none;} */
+
+
+
+
+  .empty-state {padding: 34px 18px; text-align: center; color: var(--muted-2); font-size: 13px; line-height: 1.7;}
+
+  /* session strip */
+  .session-strip {display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; max-height: 262px; overflow-y: auto;}
+  .session-chip {padding: 8px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid #fff; background: #fff; border-radius: var(--radius);}
+  /* .session-chip:hover {transform: translateY(-1px);} */
+  .session-chip.selected {border-color: var(--ac-02);}
+  .session-chip .date {font-weight: 600; font-size: 14px;}
+  .session-chip .stats {margin-top: 8px; display: flex; justify-content: space-between; align-items: center;}
+  .session-chip .stats .depth-pill {display: inline-block; background: var(--gold); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: var(--radius);}
+  .session-chip .stats .count {color: var(--muted); font-size: 11.5px; margin-left: 6px;}
+  .session-chip .chip-del {position: absolute; top: 8px; right: 8px; font-size: 14px; line-height: 1; cursor: pointer; padding: 3px;}
+  .session-chip .chip-del:hover {color: var(--coral);}
+
+  /* generic panel (session detail / dive detail) */
+  .panel {margin-top: 24px;}
+  .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--ac-01);}
+  .panel-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
+  .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;}
+
+  .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 24px 0;}
+  .info-row {display: flex; align-items: center; gap: 8px; padding: 12px 12px; font-size: 12px; border-bottom: 1px solid rgba(30,20,60,.1);}
+  .info-row:nth-child(odd) {border-right: 1px solid rgba(30,20,60,.1);}
+  .info-row:nth-last-child(-n+2) {border-bottom: none;}
+  .info-row .icon-bubble {width: 24px; height: 24px; border-radius: var(--radius); flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px;}
+  .info-row .k {color: #999; flex: 0 0 auto; font-weight: 500;}
+  .info-row .v {font-weight: 600; margin-left: auto;}
+  .info-row .v b {color: var(--purple);}
+  .info-row #sessMaxDepth {color: var(--purple); font-weight: 700;}
+  .info-row #sessMaxDiveTime {color: var(--purple); font-weight: 700;}
+
+  table.dive-table {width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 16px; /* overflow: hidden; */ box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
+  table.dive-table th {font-weight: 600; text-align: center; padding: 12px 4px; border-bottom: 1px solid var(--line);}
+  table.dive-table td {padding: 12px 10px; border-bottom: 1px solid rgba(30,20,60,.05); text-align: center;}
+  table.dive-table tr.dive-row {cursor: pointer; border-radius: 12px;}
+  table.dive-table tr.dive-row:hover td {background: var(--purple-light);}
+  /* table.dive-table tr.dive-row td:first-child {border-radius: 10px 0 0 10px;}
+  table.dive-table tr.dive-row td:last-child {border-radius: 0 10px 10px 0;} */
+  table.dive-table td.idx {color: var(--muted-2); font-weight: 600;}
+  table.dive-table td.max-depth {color: var(--purple); font-weight: 700;}
+  table.dive-table td.time-cell {color: var(--muted);}
+  table.dive-table tr.dive-row.expanded td {background: var(--bg);}
+  table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0 12px 24px; border-bottom: 1px solid rgba(30,20,60,.05);}
+  /* table.dive-table tr.dive-chart-row .chart-block:first-child .chart-label {margin-top: 0;} */
+
+
+  .chart-block:first-child .chart-label {padding-top: 12px;}
+  /* .chart-block {float: left; width: 49%;} */
+  .chart-label {display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); padding: 36px 0 12px 0;}
+  .chart-label b {color: var(--text); font-weight: 700;}
+  svg.chart {width: 100%; height: 110px; display: block; touch-action: pan-y;}
+  .chart-time-axis {display: flex; justify-content: space-between; padding: 0 1% 0 4%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace;}
+  .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
+
+  .info-bar {padding: 12px 0; border-radius: 16px; background: #f7f7fb; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: sticky; top: 52px;}
+  .info-bar:after {content: ''; position: absolute; bottom: 0; left: -12px; right: -12px; height: 1px; background: var(--line);}
+  .info-bar .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
+  .info-bar .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
+  .info-bar .cell.time .val {color: var(--text);}
+  .info-bar .cell.depth .val {color: var(--depth);}
+  .info-bar .cell.vs .val {color: var(--ascent);}
+  .info-bar .cell.temp .val {color: var(--temp);}
+  .info-bar .cell.hr .val {color: var(--hr);}
+
+  .vspeed-summary {padding: 10px 0; margin-bottom: 6px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative;}
+  .vspeed-summary:after {content: ''; position: absolute; bottom: 0; left: -12px; right: -12px; height: 1px; background: var(--line);}
+  .vspeed-summary .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
+  .vspeed-summary .cell .val {font-size: 13px; margin-top: 6px; font-weight: 600;}
+  .vspeed-summary .cell.descent .val {color: var(--depth);}
+  .vspeed-summary .cell.ascent .val {color: var(--ascent);}
+
+  body.has-bottom-bar {padding-bottom: 58px;}
+  .bottom-stat-bar {position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: flex; justify-content: center; gap: 12px; padding: 8px var(--pd); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2);}
+  .bottom-stat-bar .bsb-item {flex:1; display: flex; flex-direction: column; align-items: center;  gap: 4px;}
+  .bottom-stat-bar .k {font-size: 11px; color: var(--muted); font-weight: 600;}
+  .bottom-stat-bar .v {font-size: 16px; font-weight: 700; color: var(--purple);}
+
+  .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--text); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50;}
+  .toast.show {opacity: 1; transform: translateX(-50%) translateY(4px);}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="inner">
+      <h1>
+        <svg version="1.0" xmlns="http://www.w3.org/2000/svg" width="1306.000000pt" height="395.000000pt" viewBox="0 0 1306.000000 395.000000" preserveAspectRatio="xMidYMid meet">
+          <g transform="translate(0.000000,395.000000) scale(0.100000,-0.100000)" fill="#6449A1" stroke="none">
+            <path d="M10 3944 c0 -2 32 -54 72 -116 149 -233 307 -578 407 -889 41 -127 111 -394 111 -421 0 -12 20 -17 85 -22 148 -11 317 -57 446 -122 285 -143 463 -387 528 -725 l17 -94 40 -3 c253 -16 457 -87 632 -219 113 -85 170 -140 266 -258 109 -132 144 -185 167 -252 54 -152 24 -400 -65 -541 -21 -33 -34 -43 -78 -55 -103 -29 -205 -41 -363 -41 -210 -1 -230 1 -455 59 -131 34 -161 38 -311 42 -179 6 -225 -5 -111 -26 104 -19 218 -55 322 -101 218 -97 379 -143 530 -150 273 -13 387 2 631 86 230 79 290 88 549 88 l225 -1 185 -47 c156 -39 205 -48 310 -52 69 -3 145 -1 170 3 l45 9 -90 18 c-114 23 -316 90 -350 115 -19 15 -220 91 -265 100 -142 31 -202 36 -392 35 l-168 -1 -1 51 c0 28 -2 58 -3 66 -2 8 -6 56 -10 105 -24 306 -150 835 -299 1255 -121 340 -190 497 -331 750 -214 384 -268 459 -398 550 -96 68 -260 133 -389 155 -19 3 -50 10 -69 15 -19 4 -57 11 -85 15 -134 17 -309 53 -423 85 -117 33 -185 66 -739 357 -189 100 -343 179 -343 177z"/>
+            <path d="M5944 3936 c-10 -7 -73 -41 -139 -76 -66 -34 -262 -137 -435 -228 -338 -178 -434 -219 -570 -247 -138 -28 -225 -45 -270 -50 -30 -4 -73 -10 -95 -15 -22 -5 -55 -11 -73 -15 -270 -47 -476 -156 -599 -317 -55 -72 -238 -391 -391 -683 -69 -132 -127 -241 -128 -243 -1 -2 -45 10 -98 27 -59 19 -117 31 -151 31 -30 0 -55 -2 -55 -4 0 -2 13 -36 30 -76 85 -207 214 -646 270 -925 17 -82 32 -150 33 -152 2 -1 27 30 57 69 72 94 207 230 295 296 131 98 313 179 455 202 36 6 76 12 90 14 14 3 50 5 81 5 l56 1 7 50 c32 240 138 454 301 608 152 143 379 250 592 278 32 4 61 9 66 10 4 1 28 2 55 3 l47 1 38 157 c97 401 269 818 472 1148 47 76 84 140 82 141 -2 2 -12 -2 -23 -10z"/>
+            <path d="M10551 3362 c-19 -9 -48 -34 -65 -55 -27 -34 -31 -46 -31 -101 0 -79 34 -138 98 -167 156 -70 313 89 238 243 -41 87 -154 124 -240 80z"/>
+            <path d="M11035 3358 c-54 -32 -85 -88 -85 -156 0 -62 16 -98 64 -140 59 -52 145 -55 216 -8 48 31 75 87 74 151 -1 101 -65 167 -168 173 -50 2 -68 -2 -101 -20z"/>
+            <path d="M6066 3283 c-2 -2 35 -96 80 -211 76 -191 165 -415 524 -1324 l133 -338 193 0 193 0 -23 63 c-13 34 -47 121 -76 192 -61 152 -339 856 -512 1295 -66 168 -124 309 -129 315 -8 8 -375 16 -383 8z"/>
+            <path d="M7524 3275 c-7 -21 -365 -961 -375 -985 -6 -14 -24 -60 -40 -103 l-29 -77 90 -226 c49 -124 93 -232 98 -240 11 -19 -9 -66 177 426 81 212 216 569 302 793 85 225 153 410 151 412 -9 9 -371 9 -374 0z"/>
+            <path d="M9725 3159 c-55 -22 -131 -51 -170 -66 -38 -15 -73 -29 -77 -33 -4 -3 -10 -64 -13 -134 -3 -71 -7 -131 -10 -134 -2 -3 -36 -4 -75 -3 l-70 2 0 -163 0 -164 73 1 72 0 6 -390 c4 -270 10 -402 18 -430 31 -98 99 -173 197 -217 41 -18 72 -22 197 -26 l147 -4 0 158 0 159 -60 2 c-68 2 -106 20 -121 60 -5 15 -8 160 -7 357 l3 331 83 1 c45 1 87 2 92 3 6 1 10 62 10 162 l0 161 -82 -2 c-46 -1 -89 -2 -95 -1 -9 1 -13 52 -15 205 l-3 204 -100 -39z"/>
+            <path d="M10777 2839 c-155 -19 -278 -81 -390 -199 -84 -87 -145 -200 -178 -325 -31 -115 -31 -309 0 -423 70 -269 263 -467 502 -518 103 -22 299 -14 392 15 185 60 339 209 418 407 84 209 75 472 -22 668 -136 275 -402 413 -722 375z m185 -344 c86 -15 176 -108 219 -230 32 -88 31 -247 -1 -330 -55 -143 -138 -220 -256 -238 -54 -9 -150 9 -192 35 -207 127 -240 504 -61 688 74 76 156 97 291 75z"/>
+            <path d="M11983 2842 l-173 -2 0 -718 0 -717 178 1 c97 1 179 2 182 3 3 0 6 189 6 419 0 365 2 423 17 467 40 120 111 175 232 183 62 4 81 1 120 -18 51 -25 87 -66 112 -131 15 -39 18 -98 23 -484 l5 -440 180 0 180 0 0 484 c0 334 -4 503 -12 543 -17 85 -78 194 -148 264 -47 47 -77 68 -140 94 -71 29 -92 33 -190 36 -143 5 -210 -12 -323 -83 -29 -18 -54 -33 -56 -33 -2 0 -3 30 -2 67 1 38 -3 67 -9 67 -5 1 -88 0 -182 -2z"/>
+            <path d="M8407 2834 c-1 -1 -24 -4 -52 -8 -201 -24 -390 -165 -488 -361 -57 -115 -72 -188 -72 -355 0 -120 4 -171 19 -225 52 -192 197 -376 363 -460 100 -50 201 -68 348 -62 225 8 342 62 467 216 53 65 138 209 138 232 0 2 -84 5 -186 7 l-185 3 -45 -41 c-105 -97 -251 -124 -365 -68 -30 15 -69 45 -86 66 -34 42 -87 135 -98 170 l-6 22 499 0 500 0 4 63 c5 93 -8 244 -27 317 -25 98 -77 199 -132 254 -125 127 -252 198 -398 222 -39 6 -193 13 -198 8z m196 -343 c23 -10 61 -38 85 -62 44 -45 96 -135 86 -150 -3 -5 -140 -9 -305 -9 -244 0 -299 2 -299 13 0 23 74 130 111 161 36 31 84 54 134 66 47 11 143 2 188 -19z"/>
+            <path d="M12058 896 c-66 -18 -113 -57 -135 -113 -16 -43 -18 -80 -18 -328 0 -268 1 -282 22 -320 45 -85 108 -115 238 -115 130 0 200 35 239 119 20 43 21 61 21 326 0 271 -1 281 -23 326 -13 26 -39 58 -60 73 -63 43 -189 58 -284 32z m147 -120 c61 -26 65 -47 65 -311 0 -252 -4 -276 -52 -309 -50 -35 -123 -6 -148 59 -6 15 -10 129 -10 256 0 256 5 279 63 304 40 18 41 18 82 1z"/>
+            <path d="M12687 900 c-91 -23 -127 -61 -153 -160 -13 -50 -15 -109 -12 -323 3 -258 3 -263 28 -312 36 -68 88 -95 187 -95 54 0 85 6 116 20 25 12 43 16 45 10 2 -6 36 -10 78 -10 l74 0 0 225 0 225 -130 0 -130 0 0 -60 0 -60 51 0 51 0 -3 -86 c-4 -82 -5 -87 -37 -115 -54 -48 -123 -35 -157 31 -12 23 -15 76 -15 275 l0 245 34 37 c28 31 41 38 74 38 49 0 86 -19 101 -52 6 -13 11 -55 11 -93 l0 -70 81 0 82 0 -5 80 c-10 168 -88 248 -254 255 -43 3 -96 0 -117 -5z"/>
+            <path d="M5145 868 c-16 -67 -165 -811 -165 -824 0 -11 17 -14 79 -14 l79 0 10 48 c6 26 16 75 23 110 l12 63 81 -3 80 -3 21 -105 21 -105 83 -3 c82 -3 83 -3 78 20 -3 13 -43 206 -88 431 l-83 407 -113 0 c-109 0 -113 -1 -118 -22z m145 -338 c11 -63 23 -123 26 -132 5 -16 -2 -18 -50 -18 -31 0 -56 4 -56 9 0 7 33 180 46 240 3 13 7 22 9 20 2 -2 13 -56 25 -119z"/>
+            <path d="M5620 460 l0 -430 75 0 75 0 0 282 c0 155 4 278 8 273 5 -6 28 -111 51 -235 24 -124 47 -246 53 -273 l10 -47 78 0 77 0 27 143 c15 78 39 205 54 282 l27 140 3 -283 2 -282 80 0 80 0 0 430 0 431 -132 -3 -132 -3 -41 -262 c-22 -144 -43 -264 -46 -267 -3 -3 -13 54 -23 127 -18 132 -51 342 -61 385 -5 21 -9 22 -135 22 l-130 0 0 -430z"/>
+            <path d="M6555 868 c-16 -67 -165 -811 -165 -824 0 -11 17 -14 79 -14 l79 0 10 48 c6 26 16 75 23 110 l12 63 81 -3 80 -3 21 -105 21 -105 83 -3 c82 -3 83 -3 78 20 -3 13 -43 206 -88 431 l-83 407 -113 0 c-109 0 -113 -1 -118 -22z m145 -338 c11 -63 23 -123 26 -132 5 -16 -2 -18 -50 -18 -31 0 -56 4 -56 9 0 7 33 180 46 240 3 13 7 22 9 20 2 -2 13 -56 25 -119z"/>
+            <path d="M7020 830 l0 -60 125 0 c84 0 125 -4 125 -11 0 -6 -63 -146 -140 -311 -130 -279 -140 -304 -140 -359 l0 -59 215 0 215 0 0 60 0 59 -124 3 -124 3 124 269 124 269 0 99 0 98 -200 0 -200 0 0 -60z"/>
+            <path d="M7490 455 l0 -435 75 0 75 0 2 193 3 192 108 3 107 3 0 59 0 60 -110 0 -111 0 3 118 3 117 118 3 117 3 0 59 0 60 -195 0 -195 0 0 -435z"/>
+            <path d="M7980 460 l0 -430 80 0 80 0 0 430 0 430 -80 0 -80 0 0 -430z"/>
+            <path d="M8190 830 l0 -60 75 0 75 0 0 -370 0 -370 85 0 85 0 0 370 0 370 90 0 90 0 0 60 0 60 -250 0 -250 0 0 -60z"/>
+            <path d="M9110 459 l0 -431 203 4 c186 3 205 5 244 26 77 40 78 46 81 397 2 281 1 313 -15 344 -38 74 -104 91 -355 91 l-158 0 0 -431z m348 285 c23 -26 23 -27 20 -285 -4 -314 2 -300 -133 -307 l-85 -5 0 310 c0 170 3 313 8 317 4 5 43 6 87 2 70 -5 83 -9 103 -32z"/>
+            <path d="M9750 460 l0 -430 80 0 80 0 0 430 0 430 -80 0 -80 0 0 -430z"/>
+            <path d="M9990 873 c1 -10 38 -202 83 -428 l83 -410 126 -3 c124 -3 126 -2 131 20 15 58 167 810 167 823 0 12 -16 15 -80 15 -74 0 -80 -1 -85 -22 -3 -13 -32 -158 -65 -322 -34 -165 -62 -302 -65 -304 -2 -2 -7 6 -10 19 -6 26 -125 621 -125 626 0 2 -36 3 -80 3 -70 0 -80 -2 -80 -17z"/>
+            <path d="M10650 465 l0 -425 200 0 200 0 0 60 0 60 -125 0 -126 0 3 123 3 122 113 3 112 3 0 59 0 60 -115 0 -116 0 3 118 3 117 118 3 117 3 0 59 0 60 -195 0 -195 0 0 -425z"/>
+            <path d="M11470 465 l0 -425 190 0 190 0 0 60 0 60 -110 0 -110 0 0 365 0 365 -80 0 -80 0 0 -425z"/>
+          </g>
+        </svg>
+      </h1>
+      <label id="dropzone"> <span>＋ FIT 파일 추가</span> <input type="file" id="fileInput" accept=".fit" multiple> </label>
+    </div>
+  </header>
+
+  <main>
+    <div class="inner">
+      <div class="section-title">
+        <span>FIT 업로드 파일</span> <span class="reset-link" id="resetAll" style="display:none;">전체 초기화</span>
+      </div>
+
+      <div id="sessionListWrap">
+        <div class="data-none" id="emptyState">아직 업로드된 다이빙이 없어요.<br>여기 또는 위 버튼을 클릭하여 .fit 파일을 추가해보세요.</div>
+        <div class="session-strip" id="sessionStrip" style="display:none;"></div>
+      </div>
+
+      <!-- SESSION DETAIL: date / time / gps + table of dives -->
+      <div class="card panel" id="sessionPanel" style="display:none;">
+        <div class="panel-head">
+          <div class="title" id="sessionTitle"></div>
+          <button class="close-btn" id="closeSession">✕</button>
+        </div>
+        <div class="info-rows">
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#e6f9f5;">📉</span><span class="k">최대수심</span><span class="v" id="sessMaxDepth">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#fff4e0;">⏳</span><span class="k">최대 다이빙 시간</span><span class="v" id="sessMaxDiveTime">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#eaf1ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#efeafe;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#ffe9ee;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
+          </div>
+        </div>
+        <table class="dive-table">
+          <colgroup>
+            <col>
+            <col style="width: 28%">
+            <col style="width: 28%">
+            <col style="width: 31%">
+            <col>
+          </colgroup>
+          <thead>
+          <tr>
+            <th>No</th>
+            <th>최대수심</th>
+            <th>다이빙 시간</th>
+            <th>시작 시각</th>
+          </tr>
+          </thead>
+          <tbody id="diveTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <div class="bottom-stat-bar" id="bottomStatBar" style="display:none;">
+    <div class="bsb-item">
+      <span class="k">최대수심</span>
+      <span class="v" id="bsbMaxDepth">–</span>
+    </div>
+    <div class="bsb-item">
+      <span class="k">최대 다이빙 시간</span>
+      <span class="v" id="bsbMaxDiveTime">–</span>
+    </div>
+  </div>
+
+  <footer>
+    <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
+    <p class="copyright">© Copyright 2026 leesy@gmail.com - All rights reserved.</p>
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================== FIT BINARY PARSER ============================== */
+const FIT_EPOCH_OFFSET = 631065600; // seconds between 1989-12-31T00:00:00Z and unix epoch
+
+class FitParser {
+  constructor(arrayBuffer){
+    this.view = new DataView(arrayBuffer);
+    this.messages = [];
+  }
+  parse(){
+    const view = this.view;
+    if (view.byteLength < 14) throw new Error('파일이 너무 작습니다');
+    const headerSize = view.getUint8(0);
+    const magic = String.fromCharCode(view.getUint8(8),view.getUint8(9),view.getUint8(10),view.getUint8(11));
+    if (magic !== '.FIT') throw new Error('올바른 FIT 파일이 아닙니다');
+    const dataSize = view.getUint32(4, true);
+    let offset = headerSize;
+    const dataEnd = Math.min(headerSize + dataSize, view.byteLength);
+    const localDefs = {};
+    let lastTimestamp = null;
+
+    while (offset < dataEnd){
+      const recordHeader = view.getUint8(offset); offset += 1;
+      const isDefinition = (recordHeader & 0x40) !== 0;
+      const isCompressed = (recordHeader & 0x80) !== 0;
+      let localType, compressedOffsetVal = null;
+      if (isCompressed){
+        localType = (recordHeader >> 5) & 0x03;
+        compressedOffsetVal = recordHeader & 0x1F;
+      } else {
+        localType = recordHeader & 0x0F;
+      }
+
+      if (isDefinition){
+        offset += 1; // reserved
+        const arch = view.getUint8(offset); offset += 1;
+        const little = arch === 0;
+        const globalNum = view.getUint16(offset, little); offset += 2;
+        const numFields = view.getUint8(offset); offset += 1;
+        const fields = [];
+        for (let i=0;i<numFields;i++){
+          const fieldNum = view.getUint8(offset); offset+=1;
+          const size = view.getUint8(offset); offset+=1;
+          const baseType = view.getUint8(offset); offset+=1;
+          fields.push({fieldNum,size,baseType});
+        }
+        const devFlag = (recordHeader & 0x20) !== 0;
+        const devFields = [];
+        if (devFlag){
+          const numDev = view.getUint8(offset); offset += 1;
+          for (let i=0;i<numDev;i++){
+            offset += 1; // field num
+            const size = view.getUint8(offset); offset += 1;
+            offset += 1; // dev index
+            devFields.push({size});
+          }
+        }
+        localDefs[localType] = {globalNum, fields, little, devFields};
+      } else {
+        const def = localDefs[localType];
+        if (!def){ break; }
+        const fieldValues = {};
+        for (const f of def.fields){
+          if (offset + f.size > dataEnd + 4){ offset = dataEnd; break; }
+          const val = this._readField(view, offset, f.size, f.baseType, def.little);
+          offset += f.size;
+          fieldValues[f.fieldNum] = val;
+        }
+        for (const df of def.devFields){ offset += df.size; }
+
+        if (isCompressed && lastTimestamp != null){
+          let ts = (lastTimestamp & ~0x1F) | compressedOffsetVal;
+          if (compressedOffsetVal < (lastTimestamp & 0x1F)) ts += 0x20;
+          lastTimestamp = ts;
+          if (fieldValues[253] === undefined) fieldValues[253] = ts;
+        } else if (fieldValues[253] !== undefined && fieldValues[253] !== 0xFFFFFFFF){
+          lastTimestamp = fieldValues[253];
+        }
+        this.messages.push({globalNum: def.globalNum, fields: fieldValues});
+      }
+      if (offset <= 0 || offset > dataEnd + 16) break; // safety
+    }
+    return this.messages;
+  }
+  _readField(view, offset, size, baseType, little){
+    const readArr = (unit, fn) => {
+      const n = Math.max(1, Math.floor(size/unit));
+      if (n <= 1) return fn(offset);
+      const arr = [];
+      for (let i=0;i<n;i++) arr.push(fn(offset+i*unit));
+      return arr;
+    };
+    try{
+      switch(baseType){
+        case 0x00: case 0x02: case 0x0A: return readArr(1,(o)=>view.getUint8(o));
+        case 0x01: return readArr(1,(o)=>view.getInt8(o));
+        case 0x0D: return view.getUint8(offset);
+        case 0x83: return readArr(2,(o)=>view.getInt16(o, little));
+        case 0x84: case 0x8B: return readArr(2,(o)=>view.getUint16(o, little));
+        case 0x85: return readArr(4,(o)=>view.getInt32(o, little));
+        case 0x86: case 0x8C: return readArr(4,(o)=>view.getUint32(o, little));
+        case 0x88: return view.getFloat32(offset, little);
+        case 0x89: return view.getFloat64(offset, little);
+        case 0x07: {
+          let bytes=[];
+          for (let i=0;i<size;i++){ const b=view.getUint8(offset+i); if(b===0) break; bytes.push(b); }
+          return bytes.map(b=>String.fromCharCode(b)).join('');
+        }
+        default: return null;
+      }
+    } catch(e){ return null; }
+  }
+}
+
+/* ============================== DIVE EXTRACTION ============================== */
+function semicircleToDeg(v){ return v * (180 / 2147483648); }
+
+function extractRecords(messages){
+  const out = [];
+  for (const m of messages){
+    if (m.globalNum !== 20) continue; // 'record' message
+    const f = m.fields;
+    const rawT = f[253];
+    if (rawT === undefined || rawT === 0xFFFFFFFF) continue;
+    const t = rawT + FIT_EPOCH_OFFSET;
+
+    // Depth field number varies by manufacturer: 78 is common on Garmin dive
+    // computers, 92 shows up on Amazfit/Zepp watches. Try 78 first, then 92.
+    let depthRaw = Array.isArray(f[78]) ? f[78][0] : f[78];
+    if (depthRaw === undefined || depthRaw === 0xFFFFFFFF){
+      depthRaw = Array.isArray(f[92]) ? f[92][0] : f[92];
+    }
+    const depth = (depthRaw !== undefined && depthRaw !== 0xFFFFFFFF) ? depthRaw/1000 : null;
+
+    const hrRaw = Array.isArray(f[3]) ? f[3][0] : f[3];
+    const hr = (hrRaw !== undefined && hrRaw !== 0xFF) ? hrRaw : null;
+    const tempRaw = Array.isArray(f[13]) ? f[13][0] : f[13];
+    const temp = (tempRaw !== undefined && tempRaw !== 0x7F) ? tempRaw : null;
+
+    let lat = null, lon = null;
+    const latRaw = Array.isArray(f[0]) ? f[0][0] : f[0];
+    const lonRaw = Array.isArray(f[1]) ? f[1][0] : f[1];
+    if (latRaw !== undefined && lonRaw !== undefined && latRaw !== 0x7FFFFFFF && lonRaw !== 0x7FFFFFFF && !(latRaw===0 && lonRaw===0)){
+      lat = semicircleToDeg(latRaw); lon = semicircleToDeg(lonRaw);
+    }
+    out.push({t, depth, hr, temp, lat, lon});
+  }
+  out.sort((a,b)=>a.t-b.t);
+  return out;
+}
+
+function segmentDives(records){
+  const hasDepth = records.some(r=>r.depth != null);
+  if (!hasDepth || records.length === 0){
+    return records.length ? [{startIdx:0, endIdx: records.length-1}] : [];
+  }
+  const THRESH = 0.5;
+  const MIN_SURFACE_GAP_S = 3;
+  const raw = [];
+  let inDive = false, start = null, lastUnderwater = null;
+  for (let i=0;i<records.length;i++){
+    const d = records[i].depth ?? 0;
+    if (d > THRESH){
+      if (!inDive){ inDive = true; start = i; }
+      lastUnderwater = i;
+    } else if (inDive && (records[i].t - records[lastUnderwater].t) > MIN_SURFACE_GAP_S){
+      raw.push({startIdx:start, endIdx:lastUnderwater});
+      inDive = false;
+    }
+  }
+  if (inDive) raw.push({startIdx:start, endIdx:lastUnderwater});
+  return raw
+    .filter(d => records[d.endIdx].t - records[d.startIdx].t >= 3)
+    .map(d => ({
+      startIdx: Math.max(0, d.startIdx-2),
+      endIdx: Math.min(records.length-1, d.endIdx+2)
+    }));
+}
+
+function withDerived(slice){
+  return slice.map((r,i,arr)=>{
+    let vSpeed = null;
+    if (i>0 && r.depth!=null && arr[i-1].depth!=null){
+      const dt = r.t - arr[i-1].t;
+      if (dt > 0) vSpeed = -((r.depth - arr[i-1].depth)/dt);
+    }
+    return {...r, vSpeed};
+  });
+}
+
+/* ============================== STORAGE ==============================
+   Uses browser localStorage so records persist on-device between visits
+   when this file is opened directly (e.g. saved/opened on Android, or
+   added to the home screen) — no server, nothing leaves the phone.
+   Note: some browsers restrict localStorage for files opened straight
+   from disk (file://). If history doesn't survive a full app close,
+   try hosting this same file (e.g. a private GitHub Pages URL) instead
+   of opening it as a local file — storage is far more reliable there. */
+const LS_PREFIX = 'divelog:';
+function lsGet(key){
+  try{ const raw = localStorage.getItem(LS_PREFIX+key); return raw ? JSON.parse(raw) : null; }
+  catch(e){ console.warn('storage read failed', key, e); return null; }
+}
+function lsSet(key, value){
+  try{ localStorage.setItem(LS_PREFIX+key, JSON.stringify(value)); return true; }
+  catch(e){ console.warn('storage write failed', key, e); toast('저장 공간이 부족하거나 이 브라우저에서 저장이 제한돼 있어요'); return false; }
+}
+function lsDel(key){ try{ localStorage.removeItem(LS_PREFIX+key); } catch(e){} }
+
+const loadSessions = () => lsGet('sessions') || [];
+const saveSessions = (list) => lsSet('sessions', list);
+const loadSessionDives = (sid) => lsGet('dives:'+sid) || [];
+const saveSessionDives = (sid, list) => lsSet('dives:'+sid, list);
+const loadDiveRecords = (id) => lsGet('records:'+id);
+const saveDiveRecords = (id, records) => lsSet('records:'+id, records);
+const deleteDiveRecords = (id) => lsDel('records:'+id);
+
+/* ============================== UI STATE ============================== */
+let sessions = [];        // [{id, fileName, uploadedAt, startTime, endTime, maxDepth, diveCount, gps}]
+let currentSessionDives = null; // dive metas for open session
+let selectedSessionId = null;
+
+const $ = (sel) => document.querySelector(sel);
+const fmtTime = (sec) => {
+  const s = Math.max(0, Math.round(sec));
+  const m = Math.floor(s/60), r = s%60;
+  return String(m).padStart(2,'0')+':'+String(r).padStart(2,'0');
+};
+const fmtDateShort = (unixSec) => {
+  const d = new Date(unixSec*1000);
+  const days = ['일','월','화','수','목','금','토'];
+  return (d.getMonth()+1)+'.'+d.getDate()+'.('+days[d.getDay()]+')';
+};
+const fmtDateFull = (unixSec) => {
+  const d = new Date(unixSec*1000);
+  const days = ['일','월','화','수','목','금','토'];
+  return `${d.getFullYear()}년 ${String(d.getMonth()+1).padStart(2,'0')}월 ${String(d.getDate()).padStart(2,'0')}일 ${days[d.getDay()]}요일`;
+};
+const fmtClock = (unixSec) => {
+  const d = new Date(unixSec*1000);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+};
+const fmtClockSec = (unixSec) => {
+  const d = new Date(unixSec*1000);
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+};
+
+function toast(msg){
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._tm);
+  toast._tm = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+/* ============================== SESSION LIST ============================== */
+function renderSessionList(){
+  const strip = $('#sessionStrip');
+  const empty = $('#emptyState');
+  const resetAll = $('#resetAll');
+  if (sessions.length === 0){
+    empty.style.display = '';
+    strip.style.display = 'none';
+    resetAll.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  strip.style.display = '';
+  resetAll.style.display = '';
+  strip.innerHTML = '';
+  sessions.slice().sort((a,b)=>b.startTime-a.startTime).forEach(s=>{
+    const chip = document.createElement('div');
+    chip.className = 'card session-chip' + (selectedSessionId===s.id ? ' selected':'');
+    chip.innerHTML = `
+      <button class="chip-del" title="삭제">✕</button>
+      <div class="date">${fmtDateShort(s.startTime)}</div>
+      <div class="stats"><span class="depth-pill">${s.maxDepth.toFixed(1)}m</span><span class="count">${s.diveCount}회</span></div>
+    `;
+    chip.addEventListener('click', ()=>openSession(s.id));
+    chip.querySelector('.chip-del').addEventListener('click', (e)=>{
+      e.stopPropagation();
+      deleteSession(s.id);
+    });
+    strip.appendChild(chip);
+  });
+}
+
+function deleteSession(id){
+  if (!confirm('이 업로드 기록을 삭제할까요? 되돌릴 수 없어요.')) return;
+  const dives = loadSessionDives(id);
+  dives.forEach(d=>deleteDiveRecords(d.id));
+  lsDel('dives:'+id);
+  sessions = sessions.filter(s=>s.id!==id);
+  saveSessions(sessions);
+  if (selectedSessionId === id){
+    selectedSessionId = null;
+    $('#sessionPanel').style.display = 'none';
+    $('#bottomStatBar').style.display = 'none';
+    document.body.classList.remove('has-bottom-bar');
+  }
+  renderSessionList();
+  toast('업로드 기록을 삭제했어요');
+}
+
+function openSession(id){
+  const s = sessions.find(x=>x.id===id);
+  if (!s) return;
+  selectedSessionId = id;
+  $('#sessionPanel').style.display = '';
+  $('#sessionTitle').textContent = '📅 ' + fmtDateFull(s.startTime);
+  $('#sessTime').textContent = fmtClock(s.startTime) + ' – ' + fmtClock(s.endTime);
+  $('#sessDuration').textContent = fmtTime(s.endTime - s.startTime);
+  $('#sessDiveCount').textContent = s.diveCount + '회';
+  $('#sessMaxDepth').textContent = s.maxDepth.toFixed(1) + 'm';
+
+  currentSessionDives = loadSessionDives(id);
+  const maxDiveSec = currentSessionDives.length ? Math.max(...currentSessionDives.map(d=>d.durationSec)) : 0;
+  $('#sessMaxDiveTime').textContent = fmtTime(maxDiveSec);
+  $('#bsbMaxDepth').textContent = s.maxDepth.toFixed(1) + 'm';
+  $('#bsbMaxDiveTime').textContent = fmtTime(maxDiveSec);
+  $('#bottomStatBar').style.display = '';
+  document.body.classList.add('has-bottom-bar');
+  let hrSum = 0, hrCount = 0;
+  currentSessionDives.forEach(d=>{
+    const recs = loadDiveRecords(d.id);
+    if (recs) recs.forEach(r=>{ if (r.hr != null){ hrSum += r.hr; hrCount++; } });
+  });
+  $('#sessAvgHr').textContent = hrCount ? Math.round(hrSum/hrCount) + 'bpm' : '–';
+
+  const tbody = $('#diveTableBody');
+  tbody.innerHTML = '';
+  currentSessionDives.forEach((d, i)=>{
+    const tr = document.createElement('tr');
+    tr.className = 'dive-row';
+    tr.innerHTML = `
+      <td class="idx">${i+1}</td>
+      <td class="max-depth">${d.maxDepth.toFixed(1)} m</td>
+      <td class="time-cell">${fmtTime(d.durationSec)}</td>
+      <td class="time-cell">${fmtClockSec(d.startTime)}</td>
+    `;
+    tr.addEventListener('click', ()=>toggleDiveChartRow(tr, d));
+    tbody.appendChild(tr);
+  });
+
+  renderSessionList();
+  $('#sessionPanel').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ============================== CHART RENDERING ============================== */
+const CHART_W = 600, CHART_H = 110;
+const PAD = {l:38, r:10, t:10, b:16};
+
+function computeScale(values, mode){
+  const nums = values.filter(v=>v!=null);
+  if (nums.length===0) return {min:0,max:1};
+  let min = Math.min(...nums), max = Math.max(...nums);
+  if (mode === 'zero'){
+    const m = Math.max(Math.abs(min), Math.abs(max), 0.2);
+    return {min:-m, max:m};
+  }
+  if (mode === 'depth'){
+    return {min:0, max: Math.max(max*1.12, 1)};
+  }
+  const pad = (max-min)*0.18 || 1;
+  return {min:min-pad, max:max+pad};
+}
+
+function buildChartGeometry(values, mode){
+  const scale = computeScale(values, mode);
+  const n = values.length;
+  const innerW = CHART_W - PAD.l - PAD.r, innerH = CHART_H - PAD.t - PAD.b;
+  const range = (scale.max - scale.min) || 1;
+  const mapY = (v) => mode === 'depth'
+    ? PAD.t + ((v - scale.min)/range) * innerH
+    : PAD.t + innerH - ((v - scale.min)/range) * innerH;
+  const pts = values.map((v,i)=>{
+    const x = PAD.l + (n<=1 ? 0 : (i/(n-1)) * innerW);
+    if (v == null) return {x, y:null, v:null};
+    return {x, y: mapY(v), v};
+  });
+  let d = '', started = false;
+  pts.forEach(p=>{
+    if (p.y == null){ started=false; return; }
+    d += (started?'L':'M') + p.x.toFixed(2) + ' ' + p.y.toFixed(2) + ' ';
+    started = true;
+  });
+  return {pts, d, scale, mapY, innerW, innerH};
+}
+
+function svgChart(id, color, mode){
+  const zeroLineY = mode==='zero' ? PAD.t + (CHART_H-PAD.t-PAD.b)/2 : null;
+  return `
+  <svg class="chart" id="${id}" viewBox="0 0 ${CHART_W} ${CHART_H}" preserveAspectRatio="none">
+    <defs>
+      <linearGradient id="${id}-fill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="${id}-glow" x="-20%" y="-50%" width="140%" height="200%">
+        <feGaussianBlur stdDeviation="2.2" result="blur"/>
+        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    ${[0.25,0.5,0.75].map(f=>`<line x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" y2="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" stroke="rgba(14,50,60,0.08)" stroke-width="1"/>`).join('')}
+    ${zeroLineY!=null ? `<line x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${zeroLineY}" y2="${zeroLineY}" stroke="rgba(14,50,60,0.22)" stroke-dasharray="3,3"/>` : ''}
+    <path id="${id}-area" fill="url(#${id}-fill)" stroke="none" d=""></path>
+    <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
+    <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
+    <ellipse id="${id}-dot" rx="3.2" ry="3.2" fill="${color}" style="display:none;"/>
+    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+  </svg>`;
+}
+
+const CHART_DEFS = [
+  {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <b>수심</b> (m)'},
+  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <b>수직 속도</b> (m/s)<!-- · 아래는 하강, 위는 상승-->'},
+  {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <b>심박수</b> (bpm)'},
+  {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <b>수온</b> (℃)'},
+];
+
+/* ============================== INLINE ROW CHART (toggle) ============================== */
+function toggleDiveChartRow(tr, d){
+  const next = tr.nextElementSibling;
+  if (next && next.classList.contains('dive-chart-row')){
+    const existingTd = next.querySelector('td');
+    if (existingTd && existingTd._cleanupDrag) existingTd._cleanupDrag();
+    next.remove();
+    tr.classList.remove('expanded');
+    return;
+  }
+  const records = loadDiveRecords(d.id);
+  if (!records || !records.length){ toast('다이빙 데이터를 불러올 수 없어요'); return; }
+
+  const chartRow = document.createElement('tr');
+  chartRow.className = 'dive-chart-row';
+  const td = document.createElement('td');
+  td.colSpan = 4;
+  chartRow.appendChild(td);
+  tr.after(chartRow);
+  tr.classList.add('expanded');
+  renderInlineCharts(td, records);
+}
+
+function computeVSpeedStats(records){
+  const descents = records.map(r=>r.vSpeed).filter(v=>v!=null && v<0);
+  const ascents = records.map(r=>r.vSpeed).filter(v=>v!=null && v>0);
+  const avg = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+  return {
+    avgDescent: avg(descents),
+    maxDescent: descents.length ? Math.min(...descents) : null,
+    avgAscent: avg(ascents),
+    maxAscent: ascents.length ? Math.max(...ascents) : null,
+  };
+}
+
+function renderInlineCharts(container, records){
+  const uid = 'inline-' + Math.random().toString(36).slice(2,8);
+  const totalSec = records.length ? records[records.length-1].t - records[0].t : 0;
+  const vs = computeVSpeedStats(records);
+  const fmtVs = CHART_DEFS.find(d=>d.key==='vSpeed').fmt;
+  container.innerHTML = `
+    <div class="vspeed-summary">
+      <div class="cell descent"><div class="k">평균 하강</div><div class="val mono">${fmtVs(vs.avgDescent)}</div></div>
+      <div class="cell descent"><div class="k">최대 하강</div><div class="val mono">${fmtVs(vs.maxDescent)}</div></div>
+      <div class="cell ascent"><div class="k">평균 상승</div><div class="val mono">${fmtVs(vs.avgAscent)}</div></div>
+      <div class="cell ascent"><div class="k">최대 상승</div><div class="val mono">${fmtVs(vs.maxAscent)}</div></div>
+    </div>
+    <div class="info-bar">
+      <div class="cell time"><div class="k">시간</div><div class="val mono" data-info="time">–</div></div>
+      <div class="cell depth"><div class="k">수심</div><div class="val mono" data-info="depth">–</div></div>
+      <div class="cell vs"><div class="k">속도</div><div class="val mono" data-info="vs">–</div></div>
+      <div class="cell temp"><div class="k">수온</div><div class="val mono" data-info="temp">–</div></div>
+      <div class="cell hr"><div class="k">심박</div><div class="val mono" data-info="hr">–</div></div>
+    </div>
+    <div class="chart-block-wrap">
+      ${CHART_DEFS.map(def=>`
+      <div class="chart-block">
+        <div class="chart-label">${def.label}</div>
+        <div data-key="${def.key}"></div>
+        <div class="chart-time-axis">${[0,1,2,3,4,5,6].map(i=>`<span>${fmtTime(totalSec*i/6).replace(/^0/,'')}</span>`).join('')}</div>
+      </div>`).join('')}
+    </div>`;
+
+  const geoms = {};
+  const chartIds = {};
+  CHART_DEFS.forEach(def=>{
+    const wrap = container.querySelector(`[data-key="${def.key}"]`);
+    const values = records.map(r=>r[def.key]);
+    if (!values.some(v=>v!=null)){
+      wrap.innerHTML = `<div class="no-data">이 다이빙에는 ${def.key} 데이터가 없어요</div>`;
+      return;
+    }
+    const chartId = uid + '-' + def.key;
+    chartIds[def.key] = chartId;
+    wrap.innerHTML = svgChart(chartId, def.colorHex, def.mode);
+    const geo = buildChartGeometry(values, def.mode);
+    geoms[def.key] = geo;
+    wrap.querySelector(`#${chartId}-line`).setAttribute('d', geo.d);
+    if (geo.d){
+      const zeroY = def.mode==='zero' ? geo.mapY(0) : geo.mapY(geo.scale.min);
+      wrap.querySelector(`#${chartId}-area`).setAttribute('d', geo.d + `L ${geo.pts[geo.pts.length-1].x.toFixed(2)} ${zeroY.toFixed(2)} L ${geo.pts[0].x.toFixed(2)} ${zeroY.toFixed(2)} Z`);
+    }
+    wrap.querySelector(`#${chartId}-max`).textContent = def.fmt(geo.scale.max);
+    wrap.querySelector(`#${chartId}-min`).textContent = def.fmt(geo.scale.min);
+  });
+
+  updateInlineCrosshair(container, null, records, geoms, chartIds);
+  attachInlineDrag(container, records, geoms, chartIds);
+}
+
+function updateInlineCrosshair(container, idx, records, geoms, chartIds){
+  const setInfo = (key, val) => { const el = container.querySelector(`[data-info="${key}"]`); if (el) el.textContent = val; };
+  if (idx == null){
+    CHART_DEFS.forEach(def=>{
+      const chartId = chartIds[def.key];
+      if (!chartId) return;
+      const ch = document.getElementById(chartId+'-crosshair');
+      const dot = document.getElementById(chartId+'-dot');
+      if (ch) ch.style.display = 'none';
+      if (dot) dot.style.display = 'none';
+    });
+    ['time','depth','vs','temp','hr'].forEach(k=>setInfo(k, '–'));
+    return;
+  }
+  const r = records[idx];
+  const t0 = records[0].t;
+  setInfo('time', fmtTime(r.t - t0));
+  setInfo('depth', r.depth==null? '–' : r.depth.toFixed(1)+'m');
+  setInfo('vs', r.vSpeed==null? '–' : (r.vSpeed>=0?'+':'')+r.vSpeed.toFixed(2));
+  setInfo('temp', r.temp==null? '–' : r.temp.toFixed(1)+'℃');
+  setInfo('hr', r.hr==null? '–' : Math.round(r.hr)+'bpm');
+
+  CHART_DEFS.forEach(def=>{
+    const geo = geoms[def.key];
+    const chartId = chartIds[def.key];
+    if (!geo || !chartId) return;
+    const svgEl = document.getElementById(chartId);
+    const ch = document.getElementById(chartId+'-crosshair');
+    const dot = document.getElementById(chartId+'-dot');
+    if (!ch || !dot) return;
+    const p = geo.pts[idx];
+    ch.setAttribute('x1', p.x); ch.setAttribute('x2', p.x);
+    ch.style.display = '';
+    if (p.y != null){
+      const scaleX = svgEl ? (svgEl.getBoundingClientRect().width / CHART_W) || 1 : 1;
+      dot.setAttribute('rx', (3.2/scaleX).toFixed(2));
+      dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+      dot.style.display = '';
+    } else {
+      dot.style.display = 'none';
+    }
+  });
+}
+
+function attachInlineDrag(container, records, geoms, chartIds){
+  const svgs = Object.values(chartIds).map(id=>document.getElementById(id)).filter(Boolean);
+  if (svgs.length === 0) return;
+  let dragging = false;
+  let startX = 0, startY = 0, axisLock = null; // axisLock: null(미정) | 'x'(차트 드래그) | 'y'(스크롤 양보)
+  const n = records.length;
+  const SLOP = 6; // 방향 판단 전 허용 오차(px)
+
+  function indexFromClientX(clientX){
+    const rect = svgs[0].getBoundingClientRect();
+    const relX = ((clientX - rect.left)/rect.width) * CHART_W;
+    const innerW = CHART_W - PAD.l - PAD.r;
+    const frac = (relX - PAD.l)/innerW;
+    const idx = Math.round(frac * (n-1));
+    return Math.max(0, Math.min(n-1, idx));
+  }
+  function onMove(e){
+    const isTouch = !!e.touches;
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    if (isTouch && axisLock == null){
+      const dx = clientX - startX, dy = clientY - startY;
+      if (Math.abs(dx) < SLOP && Math.abs(dy) < SLOP) return;
+      axisLock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+      if (axisLock === 'x') dragging = true;
+    }
+    if (axisLock === 'y') return; // 세로 이동은 스크롤에 양보
+    if (!dragging) return;
+    if (isTouch) e.preventDefault();
+    updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
+  }
+  function onDown(e){
+    const isTouch = !!e.touches;
+    const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+    const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+    startX = clientX; startY = clientY;
+    if (isTouch){
+      axisLock = null; // 첫 move에서 방향 결정
+      return;
+    }
+    dragging = true;
+    updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
+    e.preventDefault();
+  }
+  function onUp(){ dragging = false; axisLock = null; }
+
+  svgs.forEach(svg=>{
+    svg.addEventListener('mousedown', onDown);
+    svg.addEventListener('touchstart', onDown, {passive:true});
+  });
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('touchmove', onMove, {passive:false});
+  window.addEventListener('mouseup', onUp);
+  window.addEventListener('touchend', onUp);
+
+  container._cleanupDrag = () => {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('touchmove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    window.removeEventListener('touchend', onUp);
+  };
+}
+
+/* ============================== FILE HANDLING ============================== */
+function handleFiles(fileList){
+  const files = Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.fit'));
+  if (files.length === 0){ toast('.fit 파일만 업로드할 수 있어요'); return; }
+  let addedSessions = 0;
+  let pending = files.length;
+
+  files.forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const buf = reader.result;
+        const parser = new FitParser(buf);
+        const messages = parser.parse();
+        const records = extractRecords(messages);
+        if (records.length === 0){ toast(file.name + ': 기록 데이터를 찾을 수 없어요'); return; }
+        const dives = segmentDives(records);
+        if (dives.length === 0){ toast(file.name + ': 다이빙 구간을 찾을 수 없어요'); return; }
+
+        // Content fingerprint (not just filename) so the same recording
+        // uploaded twice — even under a different filename — is caught.
+        const fingerprint = records[0].t + '_' + records[records.length-1].t + '_' + records.length;
+        if (sessions.some(s => s.fingerprint === fingerprint)){
+          toast(file.name + ': 이미 업로드된 파일이에요');
+          return;
+        }
+
+        const uploadedAt = Date.now();
+        const sessionId = 's' + uploadedAt + '_' + Math.random().toString(36).slice(2,7);
+        const diveMetas = [];
+        let sessionMaxDepth = 0;
+        let gps = null;
+
+        dives.forEach(seg=>{
+          const slice = withDerived(records.slice(seg.startIdx, seg.endIdx+1));
+          const depths = slice.map(r=>r.depth).filter(v=>v!=null);
+          const maxDepth = depths.length ? Math.max(...depths) : 0;
+          sessionMaxDepth = Math.max(sessionMaxDepth, maxDepth);
+          if (!gps){
+            const withGps = slice.find(r=>r.lat!=null);
+            if (withGps) gps = {lat:withGps.lat, lon:withGps.lon};
+          }
+          const diveId = 'd' + uploadedAt + '_' + seg.startIdx + '_' + Math.random().toString(36).slice(2,7);
+          diveMetas.push({
+            id: diveId,
+            startTime: slice[0].t,
+            durationSec: slice[slice.length-1].t - slice[0].t,
+            maxDepth
+          });
+          saveDiveRecords(diveId, slice);
+        });
+
+        const sessionMeta = {
+          id: sessionId,
+          fileName: file.name,
+          uploadedAt,
+          startTime: records[0].t,
+          endTime: records[records.length-1].t,
+          maxDepth: sessionMaxDepth,
+          diveCount: diveMetas.length,
+          gps,
+          fingerprint
+        };
+        saveSessionDives(sessionId, diveMetas);
+        sessions.push(sessionMeta);
+        addedSessions++;
+      } catch(err){
+        console.error(err);
+        toast(file.name + ': 분석에 실패했어요 (' + err.message + ')');
+      } finally {
+        pending--;
+        if (pending === 0) finishUpload(addedSessions);
+      }
+    };
+    reader.onerror = () => {
+      toast(file.name + ': 파일을 읽지 못했어요');
+      pending--;
+      if (pending === 0) finishUpload(addedSessions);
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function finishUpload(addedSessions){
+  if (addedSessions > 0){
+    saveSessions(sessions);
+    renderSessionList();
+    toast(addedSessions + '개의 업로드를 추가했어요');
+    const newest = sessions.slice().sort((a,b)=>b.startTime-a.startTime)[0];
+    if (newest) openSession(newest.id);
+  }
+}
+
+/* ============================== EVENTS / INIT ============================== */
+$('#fileInput').addEventListener('change', (e)=>{
+  handleFiles(e.target.files);
+  e.target.value = '';
+});
+$('#emptyState').addEventListener('click', ()=>$('#fileInput').click());
+const dropzone = $('#dropzone');
+['dragover'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.add('drag-over'); }));
+['dragleave','drop'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.remove('drag-over'); }));
+dropzone.addEventListener('drop', e=>{
+  if (e.dataTransfer.files && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
+});
+
+$('#closeSession').addEventListener('click', ()=>{
+  selectedSessionId = null;
+  $('#sessionPanel').style.display = 'none';
+  $('#bottomStatBar').style.display = 'none';
+  document.body.classList.remove('has-bottom-bar');
+  renderSessionList();
+});
+$('#resetAll').addEventListener('click', ()=>{
+  if (!confirm('업로드한 모든 다이빙 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+  sessions.forEach(s=>{
+    const dives = loadSessionDives(s.id);
+    dives.forEach(d=>deleteDiveRecords(d.id));
+    lsDel('dives:'+s.id);
+  });
+  sessions = [];
+  saveSessions(sessions);
+  selectedSessionId = null;
+  $('#sessionPanel').style.display = 'none';
+  $('#bottomStatBar').style.display = 'none';
+  document.body.classList.remove('has-bottom-bar');
+  renderSessionList();
+  toast('모두 초기화했어요');
+});
+
+function dedupeExistingSessions(){
+  const seen = new Map(); // key -> session to keep
+  const toRemove = [];
+  // Sort so the earliest upload of a duplicate set is the one kept.
+  const sorted = sessions.slice().sort((a,b)=>a.uploadedAt-b.uploadedAt);
+  sorted.forEach(s=>{
+    const key = s.fingerprint || (s.startTime+'_'+s.endTime+'_'+s.diveCount);
+    if (seen.has(key)){
+      toRemove.push(s.id);
+    } else {
+      seen.set(key, s.id);
+    }
+  });
+  if (toRemove.length === 0) return 0;
+  toRemove.forEach(id=>{
+    const dives = loadSessionDives(id);
+    dives.forEach(d=>deleteDiveRecords(d.id));
+    lsDel('dives:'+id);
+  });
+  sessions = sessions.filter(s=>!toRemove.includes(s.id));
+  saveSessions(sessions);
+  return toRemove.length;
+}
+
+(function init(){
+  sessions = loadSessions();
+  const removed = dedupeExistingSessions();
+  renderSessionList();
+  if (removed > 0) toast(removed + '개의 중복 업로드를 정리했어요');
+})();
+</script>
+</body>
+</html>

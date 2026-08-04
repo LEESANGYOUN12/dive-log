@@ -118,7 +118,10 @@
 
   /* generic panel (session detail / dive detail) */
   .panel {margin-top: 24px;}
-  .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--ac-01);}
+  .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); /* border-bottom: 1px solid var(--ac-01); */}
+  .panel-head:before {content: ''; display: block; height: 100%; background: var(--bg); border-bottom: 1px solid var(--ac-02); position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; z-index: -1;}
+
+
   .panel-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
   .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;}
 
@@ -708,8 +711,8 @@ function svgChart(id, color, mode){
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="3.2" ry="3.2" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="13" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
-    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="13" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
   </svg>`;
 }
 

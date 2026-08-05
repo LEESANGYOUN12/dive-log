@@ -14,8 +14,6 @@
     --bg:#f2f2f8;
     --ac-01 : #6449A1;
     --ac-02 : #6BBDB9;
-    --panel:#ffffff;
-    --panel-2:#ffffff;
     --line:rgba(30,20,60,0.07);
     --text:#333;
     --muted:#8b8aa3;
@@ -28,7 +26,6 @@
     --ascent:#f6a623;
     --temp:#ff7d54;
     --hr:#ff5c77;
-    --accent:#7c5cfc;
     --radius: 8px;
     --pd: 60px;
   }
@@ -39,7 +36,7 @@
   }
   @media (max-width: 760px) {
     :root {
-      --pd: 20px;
+      --pd: 16px;
     }
   }
   * {box-sizing: border-box; margin: 0; padding: 0; outline: none; border: none; list-style: none; text-decoration: none; -webkit-tap-highlight-color: transparent;}
@@ -117,12 +114,12 @@
   .session-chip .chip-del:hover {color: var(--coral);}
 
   /* generic panel (session detail / dive detail) */
-  .panel {margin-top: 24px;}
-  .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); /* border-bottom: 1px solid var(--ac-01); */}
-  .panel-head:before {content: ''; display: block; height: 100%; background: var(--bg); border-bottom: 1px solid var(--ac-02); position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; z-index: -1;}
+  .contents {margin-top: 24px;}
+  .contents-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); /* border-bottom: 1px solid var(--ac-01); */}
+  .contents-head:before {content: ''; display: block; height: 100%; background: var(--bg); border-bottom: 1px solid var(--ac-02); position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; z-index: -1;}
 
 
-  .panel-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
+  .contents-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
   .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;}
 
   .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 24px 0;}
@@ -236,8 +233,8 @@
       </div>
 
       <!-- SESSION DETAIL: date / time / gps + table of dives -->
-      <div class="card panel" id="sessionPanel" style="display:none;">
-        <div class="panel-head">
+      <div class="contents" id="sessionPanel" style="display:none;">
+        <div class="contents-head">
           <div class="title" id="sessionTitle"></div>
           <button class="close-btn" id="closeSession">✕</button>
         </div>
@@ -272,9 +269,9 @@
           <thead>
           <tr>
             <th>No</th>
-            <th>최대수심</th>
-            <th>다이빙 시간</th>
             <th>시작 시각</th>
+            <th>다이빙 시간</th>
+            <th>최대수심</th>
           </tr>
           </thead>
           <tbody id="diveTableBody"></tbody>
@@ -295,7 +292,7 @@
   </div>
 
   <footer>
-    <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
+    <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 <br>다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
     <p class="copyright">© Copyright 2026 leesy@gmail.com - All rights reserved.</p>
   </footer>
 </div>
@@ -574,7 +571,7 @@ function renderSessionList(){
   strip.innerHTML = '';
   sessions.slice().sort((a,b)=>b.startTime-a.startTime).forEach(s=>{
     const chip = document.createElement('div');
-    chip.className = 'card session-chip' + (selectedSessionId===s.id ? ' selected':'');
+    chip.className = 'session-chip' + (selectedSessionId===s.id ? ' selected':'');
     chip.innerHTML = `
       <button class="chip-del" title="삭제">✕</button>
       <div class="date">${fmtDateShort(s.startTime)}</div>
@@ -638,9 +635,9 @@ function openSession(id){
     tr.className = 'dive-row';
     tr.innerHTML = `
       <td class="idx">${i+1}</td>
-      <td class="max-depth">${d.maxDepth.toFixed(1)} m</td>
-      <td class="time-cell">${fmtTime(d.durationSec)}</td>
       <td class="time-cell">${fmtClockSec(d.startTime)}</td>
+      <td class="time-cell">${fmtTime(d.durationSec)}</td>
+      <td class="max-depth">${d.maxDepth.toFixed(1)} m</td>
     `;
     tr.addEventListener('click', ()=>toggleDiveChartRow(tr, d));
     tbody.appendChild(tr);

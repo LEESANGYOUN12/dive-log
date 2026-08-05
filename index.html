@@ -153,6 +153,8 @@
   .info-bar .cell.temp .val {color: var(--temp);}
   .info-bar .cell.hr .val {color: var(--hr);}
 
+  body.has-fixed-info-bar {padding-bottom: 60px;}
+  .info-bar-fixed {position: fixed; left: 0; right: 0; top: auto; bottom: 0; z-index: 200; border-bottom: none; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2);}
 
   :has(.info-bar.fixed) .contents-head.fixed:after {box-shadow: none;}
   .info-bar.fixed {border-color: transparent; z-index: 101;}
@@ -268,6 +270,14 @@
       </div>
     </div>
   </main>
+
+  <div class="info-bar info-bar-fixed" id="fixedInfoBar" style="display:none;">
+    <div class="cell time"><div class="k">시간</div><div class="val" data-info="time">–</div></div>
+    <div class="cell depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></div>
+    <div class="cell vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></div>
+    <div class="cell temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></div>
+    <div class="cell hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></div>
+  </div>
 
   <footer>
     <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 <br>다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
@@ -574,6 +584,8 @@ function deleteSession(id){
   if (selectedSessionId === id){
     selectedSessionId = null;
     $('#sessionPanel').style.display = 'none';
+    $('#fixedInfoBar').style.display = 'none';
+    document.body.classList.remove('has-fixed-info-bar');
   }
   renderSessionList();
   toast('업로드 기록을 삭제했어요');
@@ -584,6 +596,8 @@ function openSession(id){
   if (!s) return;
   selectedSessionId = id;
   $('#sessionPanel').style.display = '';
+  $('#fixedInfoBar').style.display = '';
+  document.body.classList.add('has-fixed-info-bar');
   $('#sessionTitle').textContent = fmtDateFull(s.startTime);
   $('#sessTime').textContent = fmtClock(s.startTime) + ' – ' + fmtClock(s.endTime);
   $('#sessDuration').textContent = fmtTime(s.endTime - s.startTime);
@@ -795,7 +809,15 @@ function renderInlineCharts(container, records){
 }
 
 function updateInlineCrosshair(container, idx, records, geoms, chartIds){
-  const setInfo = (key, val) => { const el = container.querySelector(`[data-info="${key}"]`); if (el) el.textContent = val; };
+  const fixedBar = document.getElementById('fixedInfoBar');
+  const setInfo = (key, val) => {
+    const el = container.querySelector(`[data-info="${key}"]`);
+    if (el) el.textContent = val;
+    if (idx != null && fixedBar){
+      const fixedEl = fixedBar.querySelector(`[data-info="${key}"]`);
+      if (fixedEl) fixedEl.textContent = val;
+    }
+  };
   if (idx == null){
     CHART_DEFS.forEach(def=>{
       const chartId = chartIds[def.key];
@@ -1021,6 +1043,8 @@ dropzone.addEventListener('drop', e=>{
 $('#closeSession').addEventListener('click', ()=>{
   selectedSessionId = null;
   $('#sessionPanel').style.display = 'none';
+  $('#fixedInfoBar').style.display = 'none';
+  document.body.classList.remove('has-fixed-info-bar');
   renderSessionList();
 });
 $('#resetAll').addEventListener('click', ()=>{
@@ -1034,6 +1058,8 @@ $('#resetAll').addEventListener('click', ()=>{
   saveSessions(sessions);
   selectedSessionId = null;
   $('#sessionPanel').style.display = 'none';
+  $('#fixedInfoBar').style.display = 'none';
+  document.body.classList.remove('has-fixed-info-bar');
   renderSessionList();
   toast('모두 초기화했어요');
 });

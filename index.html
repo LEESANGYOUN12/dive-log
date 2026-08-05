@@ -10,6 +10,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* 리셋 */
   :root {
     --bg:#f2f2f8;
     --ac-01 : #6449A1;
@@ -47,23 +48,23 @@
   img,svg {display: block; max-width: 100%;}
   table {border-collapse: collapse; border-spacing: 0;}
   body {background: var(--bg); font-family: 'Pretendard Variable','Pretendard',system-ui,sans-serif; color: var(--text); word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-size: 14px; font-weight: 500;}
+  /* 공통 */
   .app {display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;
-    header {padding: 20px var(--pd);  border-bottom: 1px solid var(--ac-01);
+    header {padding: 20px var(--pd);  border-bottom: 1px solid #ccc;
       .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
       h1 svg {width: 120px; height: auto;}
-      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius); cursor: pointer;}
+      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
       label input {display: none;}
       label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
     }
     main {flex: 1; padding: 0 var(--pd) 60px var(--pd);
       .inner {max-width: 900px; margin: 0 auto;}
     }
-    footer {padding: 24px var(--pd); border-top: 1px solid #999;
+    footer {padding: 24px var(--pd); border-top: 1px solid #ccc;
       p {color: #666; font-size: 12px; text-align: center;}
       p.copyright {color: #999; margin-top: 4px;}
     }
   }
-
   @media (max-width: 760px) {
     .app header {padding: 12px var(--pd);}
     .app header h1 svg {width: 110px;}
@@ -71,7 +72,7 @@
 
 
 
-  .mono {font-family: 'JetBrains Mono', monospace;}
+  /* .mono {font-family: 'JetBrains Mono', monospace;} */
 
 
 /*   @media (max-width: 1024px) {
@@ -83,7 +84,7 @@
     }
 
   } */
-
+  /* 상단 타이틀 */
   .section-title {font-size: 20px; font-weight: 700; color: var(--ac-01); margin: 24px 0 16px 0; display: flex; justify-content: space-between; align-items: center; letter-spacing: -1px;}
   .section-title .reset-link {font-size: 13px; font-weight: 400; cursor: pointer; padding: 6px 12px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
   .data-none {padding: 24px; text-align: center; color: var(--ac-02); background: #fff; border-radius: var(--radius); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer; border: 2px dashed var(--ac-02);}

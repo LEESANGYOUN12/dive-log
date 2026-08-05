@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#f2f2f8">
-  <title>Dive Log · 프리다이빙 분석</title>
+  <title>Veton Dive Log</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='75' font-size='75'%3E%F0%9F%A4%BF%3C/text%3E%3C/svg%3E">
   <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -49,12 +49,12 @@
     button {cursor: pointer;}
     img,svg {display: block; max-width: 100%;}
     table {border-collapse: collapse; border-spacing: 0;}
-    body {background: var(--bg); font-family: 'Pretendard Variable','Pretendard',system-ui,sans-serif; color: var(--text); min-height: 100vh; word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-size: 14px; font-weight: 500;}
-    .app {display: flex; flex-direction: column; min-height: 100vh;
+    body {background: var(--bg); font-family: 'Pretendard Variable','Pretendard',system-ui,sans-serif; color: var(--text); word-break: keep-all; overflow-wrap: break-word; line-height: 1.6; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; font-size: 14px; font-weight: 500;}
+    .app {display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh;
       header {padding: 20px var(--pd);  border-bottom: 1px solid var(--ac-01);
         .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
         h1 svg {width: 120px; height: auto;}
-        label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius);}
+        label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius); cursor: pointer;}
         label input {display: none;}
         label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
       }
@@ -105,8 +105,8 @@
     .empty-state {padding: 34px 18px; text-align: center; color: var(--muted-2); font-size: 13px; line-height: 1.7;}
 
     /* session strip */
-    .session-strip {display: flex; gap: 10px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;}
-    .session-chip {flex: 0 0 auto; min-width: 130px; padding: 12px 14px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid #fff; background: #fff; border-radius: var(--radius);}
+    .session-strip {display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; max-height: 262px; overflow-y: auto;}
+    .session-chip {padding: 8px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid #fff; background: #fff; border-radius: var(--radius);}
     /* .session-chip:hover {transform: translateY(-1px);} */
     .session-chip.selected {border-color: var(--ac-02);}
     .session-chip .date {font-weight: 600; font-size: 14px;}
@@ -118,7 +118,10 @@
 
     /* generic panel (session detail / dive detail) */
     .panel {margin-top: 24px;}
-    .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--ac-01);}
+    .panel-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); /* border-bottom: 1px solid var(--ac-01); */}
+    .panel-head:before {content: ''; display: block; height: 100%; background: var(--bg); border-bottom: 1px solid var(--ac-02); position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; z-index: -1;}
+
+
     .panel-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
     .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;}
 
@@ -130,7 +133,8 @@
     .info-row .k {color: #999; flex: 0 0 auto; font-weight: 500;}
     .info-row .v {font-weight: 600; margin-left: auto;}
     .info-row .v b {color: var(--purple);}
-
+    .info-row #sessMaxDepth {color: var(--purple); font-weight: 700;}
+    .info-row #sessMaxDiveTime {color: var(--purple); font-weight: 700;}
 
     table.dive-table {width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 16px; /* overflow: hidden; */ box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
     table.dive-table th {font-weight: 600; text-align: center; padding: 12px 4px; border-bottom: 1px solid var(--line);}
@@ -142,20 +146,21 @@
     table.dive-table td.idx {color: var(--muted-2); font-weight: 600;}
     table.dive-table td.max-depth {color: var(--purple); font-weight: 700;}
     table.dive-table td.time-cell {color: var(--muted);}
-    table.dive-table tr.dive-row.expanded td {background: var(--purple-light);}
-    table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0 12px 24px; border-bottom: 1px solid rgba(30,20,60,.05);}
+    table.dive-table tr.dive-row.expanded td {background: var(--bg); border-bottom-color: #ccc;}
+    table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
     /* table.dive-table tr.dive-chart-row .chart-block:first-child .chart-label {margin-top: 0;} */
 
 
-    .chart-block:first-child .chart-label {padding-top: 12px;}
-    /* .chart-block {float: left; width: 49%;} */
-    .chart-label {display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); padding: 36px 0 12px 0;}
-    .chart-label b {color: var(--text); font-weight: 700;}
-    svg.chart {width: 100%; height: 110px; display: block; touch-action: none;}
+    /* .chart-block:first-child .chart-label {padding-top: 24px;} */
+    .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 12px;}
+    .chart-label {display: flex; align-items: center; gap: 2px; color: var(--muted); margin-bottom: 12px; justify-content: center;}
+    .chart-label b {color: var(--text); font-weight: 700; font-size: 16px;}
+    .chart-label span {color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; position: relative; top: 2px;}
+    svg.chart {width: 100%; height: 110px; display: block; touch-action: pan-y;}
     .chart-time-axis {display: flex; justify-content: space-between; padding: 0 1% 0 4%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace;}
     .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
 
-    .info-bar {padding: 12px 0; border-radius: 16px; background: #f7f7fb; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 4px; text-align: center; position: sticky; top: 52px;}
+    .info-bar {padding: 12px; background: #f7f7fb; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: sticky; top: 52px; z-index: 10; border-bottom: 1px dashed #ccc;}
     .info-bar .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
     .info-bar .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
     .info-bar .cell.time .val {color: var(--text);}
@@ -164,7 +169,19 @@
     .info-bar .cell.temp .val {color: var(--temp);}
     .info-bar .cell.hr .val {color: var(--hr);}
 
-    .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--text); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 12.5px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 50;}
+    .vspeed-summary {padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative;  border-bottom: 1px dashed #ccc;}
+    .vspeed-summary .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
+    .vspeed-summary .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
+    .vspeed-summary .cell.descent .val {color: var(--depth);}
+    .vspeed-summary .cell.ascent .val {color: var(--ascent);}
+
+    body.has-bottom-bar {padding-bottom: 58px;}
+    .bottom-stat-bar {position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: flex; justify-content: center; gap: 12px; padding: 8px var(--pd); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2);}
+    .bottom-stat-bar .bsb-item {flex:1; display: flex; flex-direction: column; align-items: center;  gap: 2px;}
+    .bottom-stat-bar .k {font-size: 11px; color: var(--muted); font-weight: 600;}
+    .bottom-stat-bar .v {font-size: 16px; font-weight: 700; color: var(--purple);}
+
+    .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--text); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 12px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 9999;}
     .toast.show {opacity: 1; transform: translateX(-50%) translateY(4px);}
 
   </style>
@@ -226,19 +243,19 @@
         </div>
         <div class="info-rows">
           <div class="info-row">
-            <span class="icon-bubble" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon-bubble" style="background:#eaf1ff;">🏊</span><span class="k">운동시간</span><span class="v" id="sessDuration">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon-bubble" style="background:#efeafe;">🔢</span><span class="k">다이빙횟수</span><span class="v" id="sessDiveCount">–</span>
-          </div>
-          <div class="info-row">
             <span class="icon-bubble" style="background:#e6f9f5;">📉</span><span class="k">최대수심</span><span class="v" id="sessMaxDepth">–</span>
           </div>
           <div class="info-row">
             <span class="icon-bubble" style="background:#fff4e0;">⏳</span><span class="k">최대 다이빙 시간</span><span class="v" id="sessMaxDiveTime">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#eaf1ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:#efeafe;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
+          </div>
+          <div class="info-row">
+            <span class="icon-bubble" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
           </div>
           <div class="info-row">
             <span class="icon-bubble" style="background:#ffe9ee;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
@@ -266,10 +283,19 @@
     </div>
   </main>
 
-
+  <div class="bottom-stat-bar" id="bottomStatBar" style="display:none;">
+    <div class="bsb-item">
+      <span class="k">최대수심</span>
+      <span class="v" id="bsbMaxDepth">–</span>
+    </div>
+    <div class="bsb-item">
+      <span class="k">최대 다이빙 시간</span>
+      <span class="v" id="bsbMaxDiveTime">–</span>
+    </div>
+  </div>
 
   <footer>
-    <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 다이빙별 기록으로 정리됩니다.</p>
+    <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
     <p class="copyright">© Copyright 2026 leesy@gmail.com - All rights reserved.</p>
   </footer>
 </div>
@@ -573,6 +599,8 @@
     if (selectedSessionId === id){
       selectedSessionId = null;
       $('#sessionPanel').style.display = 'none';
+      $('#bottomStatBar').style.display = 'none';
+      document.body.classList.remove('has-bottom-bar');
     }
     renderSessionList();
     toast('업로드 기록을 삭제했어요');
@@ -592,6 +620,10 @@
     currentSessionDives = loadSessionDives(id);
     const maxDiveSec = currentSessionDives.length ? Math.max(...currentSessionDives.map(d=>d.durationSec)) : 0;
     $('#sessMaxDiveTime').textContent = fmtTime(maxDiveSec);
+    $('#bsbMaxDepth').textContent = s.maxDepth.toFixed(1) + 'm';
+    $('#bsbMaxDiveTime').textContent = fmtTime(maxDiveSec);
+    $('#bottomStatBar').style.display = '';
+    document.body.classList.add('has-bottom-bar');
     let hrSum = 0, hrCount = 0;
     currentSessionDives.forEach(d=>{
       const recs = loadDiveRecords(d.id);
@@ -679,16 +711,16 @@
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="3.2" ry="3.2" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
-    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="8.5" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
   </svg>`;
   }
 
   const CHART_DEFS = [
-    {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <b>수심</b> (m)'},
-    {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <b>수직 속도</b> (m/s)<!-- · 아래는 하강, 위는 상승-->'},
-    {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <b>심박수</b> (bpm)'},
-    {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <b>수온</b> (℃)'},
+    {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <b>수심</b> <span>(m)</span>'},
+    {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <b>수직 속도</b> <span>(m/s)</span><!-- · 아래는 하강, 위는 상승-->'},
+    {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <b>심박수</b> <span>(bpm)</span>'},
+    {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <b>수온</b> <span>(℃)</span>'},
   ];
 
   /* ============================== INLINE ROW CHART (toggle) ============================== */
@@ -714,23 +746,43 @@
     renderInlineCharts(td, records);
   }
 
+  function computeVSpeedStats(records){
+    const descents = records.map(r=>r.vSpeed).filter(v=>v!=null && v<0);
+    const ascents = records.map(r=>r.vSpeed).filter(v=>v!=null && v>0);
+    const avg = (arr) => arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : null;
+    return {
+      avgDescent: avg(descents),
+      maxDescent: descents.length ? Math.min(...descents) : null,
+      avgAscent: avg(ascents),
+      maxAscent: ascents.length ? Math.max(...ascents) : null,
+    };
+  }
+
   function renderInlineCharts(container, records){
     const uid = 'inline-' + Math.random().toString(36).slice(2,8);
     const totalSec = records.length ? records[records.length-1].t - records[0].t : 0;
+    const vs = computeVSpeedStats(records);
+    const fmtVs = CHART_DEFS.find(d=>d.key==='vSpeed').fmt;
     container.innerHTML = `
+    <div class="vspeed-summary">
+      <div class="cell descent"><div class="k">평균 하강</div><div class="val">${fmtVs(vs.avgDescent)}</div></div>
+      <div class="cell descent"><div class="k">최대 하강</div><div class="val">${fmtVs(vs.maxDescent)}</div></div>
+      <div class="cell ascent"><div class="k">평균 상승</div><div class="val">${fmtVs(vs.avgAscent)}</div></div>
+      <div class="cell ascent"><div class="k">최대 상승</div><div class="val">${fmtVs(vs.maxAscent)}</div></div>
+    </div>
     <div class="info-bar">
-      <div class="cell time"><div class="k">시간</div><div class="val mono" data-info="time">–</div></div>
-      <div class="cell depth"><div class="k">수심</div><div class="val mono" data-info="depth">–</div></div>
-      <div class="cell vs"><div class="k">속도</div><div class="val mono" data-info="vs">–</div></div>
-      <div class="cell temp"><div class="k">수온</div><div class="val mono" data-info="temp">–</div></div>
-      <div class="cell hr"><div class="k">심박</div><div class="val mono" data-info="hr">–</div></div>
+      <div class="cell time"><div class="k">시간</div><div class="val" data-info="time">–</div></div>
+      <div class="cell depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></div>
+      <div class="cell vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></div>
+      <div class="cell temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></div>
+      <div class="cell hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></div>
     </div>
     <div class="chart-block-wrap">
       ${CHART_DEFS.map(def=>`
       <div class="chart-block">
         <div class="chart-label">${def.label}</div>
         <div data-key="${def.key}"></div>
-        <div class="chart-time-axis">${[0,1,2,3,4,5].map(i=>`<span>${fmtTime(totalSec*i/5).replace(/^0/,'')}</span>`).join('')}</div>
+        <div class="chart-time-axis">${[0,1,2,3,4,5,6].map(i=>`<span>${fmtTime(totalSec*i/6).replace(/^0/,'')}</span>`).join('')}</div>
       </div>`).join('')}
     </div>`;
 
@@ -809,7 +861,9 @@
     const svgs = Object.values(chartIds).map(id=>document.getElementById(id)).filter(Boolean);
     if (svgs.length === 0) return;
     let dragging = false;
+    let startX = 0, startY = 0, axisLock = null; // axisLock: null(미정) | 'x'(차트 드래그) | 'y'(스크롤 양보)
     const n = records.length;
+    const SLOP = 6; // 방향 판단 전 허용 오차(px)
 
     function indexFromClientX(clientX){
       const rect = svgs[0].getBoundingClientRect();
@@ -820,32 +874,51 @@
       return Math.max(0, Math.min(n-1, idx));
     }
     function onMove(e){
+      const isTouch = !!e.touches;
+      const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+      const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+      if (isTouch && axisLock == null){
+        const dx = clientX - startX, dy = clientY - startY;
+        if (Math.abs(dx) < SLOP && Math.abs(dy) < SLOP) return;
+        axisLock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        if (axisLock === 'x') dragging = true;
+      }
+      if (axisLock === 'y') return; // 세로 이동은 스크롤에 양보
       if (!dragging) return;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      if (isTouch) e.preventDefault();
       updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
     }
     function onDown(e){
+      const isTouch = !!e.touches;
+      const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+      const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+      startX = clientX; startY = clientY;
+      if (isTouch){
+        axisLock = null; // 첫 move에서 방향 결정
+        return;
+      }
       dragging = true;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
       e.preventDefault();
     }
-    function onUp(){ dragging = false; }
+    function onUp(){ dragging = false; axisLock = null; }
 
     svgs.forEach(svg=>{
       svg.addEventListener('mousedown', onDown);
-      svg.addEventListener('touchstart', onDown, {passive:false});
+      svg.addEventListener('touchstart', onDown, {passive:true});
     });
     window.addEventListener('mousemove', onMove);
     window.addEventListener('touchmove', onMove, {passive:false});
     window.addEventListener('mouseup', onUp);
     window.addEventListener('touchend', onUp);
+    window.addEventListener('touchcancel', onUp);
 
     container._cleanupDrag = () => {
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('mouseup', onUp);
       window.removeEventListener('touchend', onUp);
+      window.removeEventListener('touchcancel', onUp);
     };
   }
 
@@ -958,6 +1031,8 @@
   $('#closeSession').addEventListener('click', ()=>{
     selectedSessionId = null;
     $('#sessionPanel').style.display = 'none';
+    $('#bottomStatBar').style.display = 'none';
+    document.body.classList.remove('has-bottom-bar');
     renderSessionList();
   });
   $('#resetAll').addEventListener('click', ()=>{
@@ -971,6 +1046,8 @@
     saveSessions(sessions);
     selectedSessionId = null;
     $('#sessionPanel').style.display = 'none';
+    $('#bottomStatBar').style.display = 'none';
+    document.body.classList.remove('has-bottom-bar');
     renderSessionList();
     toast('모두 초기화했어요');
   });

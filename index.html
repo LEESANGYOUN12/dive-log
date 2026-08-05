@@ -53,7 +53,7 @@
     header {padding: 20px var(--pd);  border-bottom: 1px solid #ccc;
       .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
       h1 svg {width: 120px; height: auto;}
-      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 16px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
+      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
       label input {display: none;}
       label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
     }
@@ -62,7 +62,7 @@
     }
     footer {padding: 24px var(--pd); border-top: 1px solid #ccc;
       p {color: #666; font-size: 12px; text-align: center;}
-      p.copyright {color: #999; margin-top: 4px;}
+      p.copyright {color: #999; margin-top: 8px;}
     }
   }
   @media (max-width: 760px) {
@@ -70,39 +70,14 @@
     .app header h1 svg {width: 110px;}
   }
 
-
-
-  /* .mono {font-family: 'JetBrains Mono', monospace;} */
-
-
-/*   @media (max-width: 1024px) {
-    .app {padding: 0 40px;}
-  }
-  @media (max-width: 760px) {
-    .app {padding: 0 20px;
-      header h1 svg {width: 120px;}
-    }
-
-  } */
   /* 상단 타이틀 */
-  .section-title {font-size: 20px; font-weight: 700; color: var(--ac-01); margin: 24px 0 16px 0; display: flex; justify-content: space-between; align-items: center; letter-spacing: -1px;}
-  .section-title .reset-link {font-size: 13px; font-weight: 400; cursor: pointer; padding: 6px 12px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
-  .data-none {padding: 24px; text-align: center; color: var(--ac-02); background: #fff; border-radius: var(--radius); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer; border: 2px dashed var(--ac-02);}
+  .section-title {font-size: 20px; font-weight: 700; color: var(--ac-01); margin: 16px 0 16px 0; display: flex; justify-content: space-between; align-items: center; letter-spacing: -1px;}
+  .section-title h2 {font: inherit; color: inherit; margin: 0;}
+  .section-title button {display: none; font-size: 13px; font-weight: 400; cursor: pointer; padding: 6px 12px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
+  .data-none {padding: 24px; text-align: center; color: var(--ac-02); background: #fff; border-radius: var(--radius); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer; border: 2px dashed var(--ac-02); font-size: 14px; font-weight: 600;}
   .data-none:hover {border-color: var(--ac-01); color: var(--ac-01);}
 
-   /* .dropzone {padding: 24px 12px; margin-bottom: 8px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; border: 2px dashed rgba(124,92,252,.3); cursor: pointer; border-radius: var(--radius); background: #fff;}
-  .dropzone:hover {border-color: var(--ac-02); background: #fff;}
-  .dropzone.drag-over {border-color: var(--purple);;}
-  .dropzone .plus-btn {font-weight: 600; background: var(--purple); border: none; color: #fff; padding: 11px 22px; border-radius: var(--radius); box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
-  .dropzone p {color: #999; font-size: 13px;}
-  input[type=file] {display: none;} */
-
-
-
-
-  .empty-state {padding: 34px 18px; text-align: center; color: var(--muted-2); font-size: 13px; line-height: 1.7;}
-
-  /* session strip */
+  /* 선택 */
   .session-strip {display: grid; grid-template-columns: repeat(auto-fit, minmax(105px, 1fr)); gap: 8px; max-height: 262px; overflow-y: auto;}
   .session-chip {padding: 8px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid #fff; background: #fff; border-radius: var(--radius);}
   /* .session-chip:hover {transform: translateY(-1px);} */
@@ -111,23 +86,29 @@
   .session-chip .stats {margin-top: 8px; display: flex; justify-content: space-between; align-items: center;}
   .session-chip .stats .depth-pill {display: inline-block; background: var(--gold); color: #fff; font-size: 12px; padding: 4px 8px; border-radius: var(--radius);}
   .session-chip .stats .count {color: var(--muted); font-size: 11.5px; margin-left: 6px;}
-  .session-chip .chip-del {position: absolute; top: 8px; right: 8px; font-size: 14px; line-height: 1; cursor: pointer; padding: 3px;}
+  .session-chip .chip-del {position: absolute; top: 12px; right: 8px; font-size: 14px; line-height: 1; cursor: pointer; padding: 3px;}
   .session-chip .chip-del:hover {color: var(--coral);}
 
   /* generic panel (session detail / dive detail) */
-  .contents {margin-top: 24px;}
-  .contents-head {display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 8px; position: sticky; top: 0; z-index: 100; background: var(--bg); /* border-bottom: 1px solid var(--ac-01); */}
-  .contents-head:before {content: ''; display: block; height: 100%; background: var(--bg); border-bottom: 1px solid var(--ac-02); position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; z-index: -1;}
-
-
-  .contents-head .title {font-family: 'Pretendard Variable','Pretendard',sans-serif; font-size: 17px; font-weight: 700;}
+  .contents {padding-top: 16px;}
+  #contentsHeadSentinel {height: 1px;}
+  .contents-head {background: #fff; border-radius: var(--radius); margin-bottom: 12px; position: sticky; top: 0; z-index: 100;
+    .tit {position: relative; padding: 12px;}
+    .tit button {position: absolute; top: 50%; right: 12px; transform: translateY(-50%);}
+    .tit h3 {font-size: 16px; display: flex; align-items: center; gap: 8px;}
+    ul {display: grid; grid-template-columns: 1fr 1fr; align-items: center; color: #999; font-size: 12px; margin-top: 0px; border-top: 1px solid #ddd;}
+    ul li {display: flex; align-items: center; gap: 8px; padding: 12px; flex: 1;}
+    ul li:first-child {border-right: 1px solid #ddd;}
+    ul li strong {margin-left: auto; color: var(--purple);}
+    .icon {display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: var(--radius); color: #fff; font-size: 11px;}
+  }
   .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;}
 
-  .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 24px 0;}
+  .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 16px 0;}
   .info-row {display: flex; align-items: center; gap: 8px; padding: 12px 12px; font-size: 12px; border-bottom: 1px solid rgba(30,20,60,.1);}
   .info-row:nth-child(odd) {border-right: 1px solid rgba(30,20,60,.1);}
   .info-row:nth-last-child(-n+2) {border-bottom: none;}
-  .info-row .icon-bubble {width: 24px; height: 24px; border-radius: var(--radius); flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px;}
+  .info-row .icon {width: 24px; height: 24px; border-radius: var(--radius); flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px;}
   .info-row .k {color: #999; flex: 0 0 auto; font-weight: 500;}
   .info-row .v {font-weight: 600; margin-left: auto;}
   .info-row .v b {color: var(--purple);}
@@ -172,12 +153,6 @@
   .vspeed-summary .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
   .vspeed-summary .cell.descent .val {color: var(--depth);}
   .vspeed-summary .cell.ascent .val {color: var(--ascent);}
-
-  body.has-bottom-bar {padding-bottom: 58px;}
-  .bottom-stat-bar {position: fixed; left: 0; right: 0; bottom: 0; z-index: 100; display: flex; justify-content: center; gap: 12px; padding: 8px var(--pd); background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2);}
-  .bottom-stat-bar .bsb-item {flex:1; display: flex; flex-direction: column; align-items: center;  gap: 2px;}
-  .bottom-stat-bar .k {font-size: 11px; color: var(--muted); font-weight: 600;}
-  .bottom-stat-bar .v {font-size: 16px; font-weight: 700; color: var(--purple);}
 
   .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--text); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 12px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 9999;}
   .toast.show {opacity: 1; transform: translateX(-50%) translateY(4px);}
@@ -224,39 +199,41 @@
 
   <main>
     <div class="inner">
-      <div class="section-title">
-        <span>FIT 업로드 파일</span> <span class="reset-link" id="resetAll" style="display:none;">전체 초기화</span>
-      </div>
+      <section class="section-title">
+        <h2>FIT 업로드 파일</h2>
+        <button id="resetAll">전체 초기화</button>
+      </section>
 
-      <div id="sessionListWrap">
-        <div class="data-none" id="emptyState">아직 업로드된 다이빙이 없어요.<br>여기 또는 위 버튼을 클릭하여 .fit 파일을 추가해보세요.</div>
+      <section id="sessionListWrap">
+        <h2 class="data-none" id="emptyState">아직 업로드된 다이빙이 없어요.<br>여기 또는 위 버튼을 클릭하여 .fit 파일을 추가해보세요.</h2>
         <div class="session-strip" id="sessionStrip" style="display:none;"></div>
-      </div>
+      </section>
 
       <!-- SESSION DETAIL: date / time / gps + table of dives -->
       <div class="contents" id="sessionPanel" style="display:none;">
+        <div id="contentsHeadSentinel"></div>
         <div class="contents-head">
-          <div class="title" id="sessionTitle"></div>
-          <button class="close-btn" id="closeSession">✕</button>
+          <div class="tit">
+            <h3 class="title"><span class="icon" style="background:#e6f9f5;">📅</span> <span id="sessionTitle"></span></h3>
+            <button class="close-btn" id="closeSession">✕</button>
+          </div>
+          <ul>
+            <li><span class="icon" style="background:#e6f9f5;">📉</span>최대수심 <strong id="sessMaxDepth">–</strong></li>
+            <li><span class="icon" style="background:#fff4e0;">⏳</span>최대 다이빙 시간 <strong id="sessMaxDiveTime">–</strong></li>
+          </ul>
         </div>
         <div class="info-rows">
           <div class="info-row">
-            <span class="icon-bubble" style="background:#e6f9f5;">📉</span><span class="k">최대수심</span><span class="v" id="sessMaxDepth">–</span>
+            <span class="icon" style="background:#eaf1ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
           </div>
           <div class="info-row">
-            <span class="icon-bubble" style="background:#fff4e0;">⏳</span><span class="k">최대 다이빙 시간</span><span class="v" id="sessMaxDiveTime">–</span>
+            <span class="icon" style="background:#efeafe;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
           </div>
           <div class="info-row">
-            <span class="icon-bubble" style="background:#eaf1ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
+            <span class="icon" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
           </div>
           <div class="info-row">
-            <span class="icon-bubble" style="background:#efeafe;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon-bubble" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon-bubble" style="background:#ffe9ee;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
+            <span class="icon" style="background:#ffe9ee;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
           </div>
         </div>
         <table class="dive-table">
@@ -280,17 +257,6 @@
       </div>
     </div>
   </main>
-
-  <div class="bottom-stat-bar" id="bottomStatBar" style="display:none;">
-    <div class="bsb-item">
-      <span class="k">최대수심</span>
-      <span class="v" id="bsbMaxDepth">–</span>
-    </div>
-    <div class="bsb-item">
-      <span class="k">최대 다이빙 시간</span>
-      <span class="v" id="bsbMaxDiveTime">–</span>
-    </div>
-  </div>
 
   <footer>
     <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 <br>다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
@@ -568,7 +534,7 @@ function renderSessionList(){
   }
   empty.style.display = 'none';
   strip.style.display = '';
-  resetAll.style.display = '';
+  resetAll.style.display = 'inline-block';
   strip.innerHTML = '';
   sessions.slice().sort((a,b)=>b.startTime-a.startTime).forEach(s=>{
     const chip = document.createElement('div');
@@ -597,8 +563,6 @@ function deleteSession(id){
   if (selectedSessionId === id){
     selectedSessionId = null;
     $('#sessionPanel').style.display = 'none';
-    $('#bottomStatBar').style.display = 'none';
-    document.body.classList.remove('has-bottom-bar');
   }
   renderSessionList();
   toast('업로드 기록을 삭제했어요');
@@ -609,7 +573,7 @@ function openSession(id){
   if (!s) return;
   selectedSessionId = id;
   $('#sessionPanel').style.display = '';
-  $('#sessionTitle').textContent = '📅 ' + fmtDateFull(s.startTime);
+  $('#sessionTitle').textContent = fmtDateFull(s.startTime);
   $('#sessTime').textContent = fmtClock(s.startTime) + ' – ' + fmtClock(s.endTime);
   $('#sessDuration').textContent = fmtTime(s.endTime - s.startTime);
   $('#sessDiveCount').textContent = s.diveCount + '회';
@@ -618,10 +582,6 @@ function openSession(id){
   currentSessionDives = loadSessionDives(id);
   const maxDiveSec = currentSessionDives.length ? Math.max(...currentSessionDives.map(d=>d.durationSec)) : 0;
   $('#sessMaxDiveTime').textContent = fmtTime(maxDiveSec);
-  $('#bsbMaxDepth').textContent = s.maxDepth.toFixed(1) + 'm';
-  $('#bsbMaxDiveTime').textContent = fmtTime(maxDiveSec);
-  $('#bottomStatBar').style.display = '';
-  document.body.classList.add('has-bottom-bar');
   let hrSum = 0, hrCount = 0;
   currentSessionDives.forEach(d=>{
     const recs = loadDiveRecords(d.id);
@@ -1014,6 +974,15 @@ function finishUpload(addedSessions){
 }
 
 /* ============================== EVENTS / INIT ============================== */
+{
+  const sentinel = $('#contentsHeadSentinel');
+  const contentsHead = document.querySelector('.contents-head');
+  if (sentinel && contentsHead){
+    new IntersectionObserver(([entry])=>{
+      contentsHead.classList.toggle('fixed', !entry.isIntersecting);
+    }, {threshold: 0}).observe(sentinel);
+  }
+}
 $('#fileInput').addEventListener('change', (e)=>{
   handleFiles(e.target.files);
   e.target.value = '';
@@ -1029,8 +998,6 @@ dropzone.addEventListener('drop', e=>{
 $('#closeSession').addEventListener('click', ()=>{
   selectedSessionId = null;
   $('#sessionPanel').style.display = 'none';
-  $('#bottomStatBar').style.display = 'none';
-  document.body.classList.remove('has-bottom-bar');
   renderSessionList();
 });
 $('#resetAll').addEventListener('click', ()=>{
@@ -1044,8 +1011,6 @@ $('#resetAll').addEventListener('click', ()=>{
   saveSessions(sessions);
   selectedSessionId = null;
   $('#sessionPanel').style.display = 'none';
-  $('#bottomStatBar').style.display = 'none';
-  document.body.classList.remove('has-bottom-bar');
   renderSessionList();
   toast('모두 초기화했어요');
 });

@@ -93,22 +93,24 @@
   .contents {padding-top: 16px;}
   #contentsHeadSentinel {height: 1px;}
   .contents-head {background: #fff; border-radius: var(--radius); margin-bottom: 12px; position: sticky; top: 0; z-index: 100;
-    .tit {position: relative; padding: 12px;}
+    .tit {position: relative; padding: 12px; border-bottom: 1px solid #ddd;}
     .tit button {position: absolute; top: 50%; right: 12px; transform: translateY(-50%);}
     .tit h3 {font-size: 16px; display: flex; align-items: center; gap: 8px;}
-    ul {display: grid; grid-template-columns: 1fr 1fr; align-items: center; color: #999; font-size: 12px; margin-top: 0px; border-top: 1px solid #ddd;}
+    ul {display: grid; grid-template-columns: 1fr 1fr; align-items: center; color: #999; font-size: 12px; margin-top: 0px;}
     ul li {display: flex; align-items: center; gap: 8px; padding: 12px; flex: 1;}
     ul li:first-child {border-right: 1px solid #ddd;}
     ul li strong {margin-left: auto; color: var(--purple);}
     .icon {display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: var(--radius); color: #fff; font-size: 11px;}
   }
   .contents-head.fixed {}
+  .contents-head.fixed .tit {border-color: transparent;}
+  .contents-head.fixed .tit:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
   .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
   /* .close-btn {background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 4px;} */
 
   .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 16px 0;}
-  .info-row {display: flex; align-items: center; gap: 8px; padding: 12px 12px; font-size: 12px; border-bottom: 1px solid rgba(30,20,60,.1);}
-  .info-row:nth-child(odd) {border-right: 1px solid rgba(30,20,60,.1);}
+  .info-row {display: flex; align-items: center; gap: 8px; padding: 12px 12px; font-size: 12px; border-bottom: 1px solid #ddd;}
+  .info-row:nth-child(odd) {border-right: 1px solid #ddd;}
   .info-row:nth-last-child(-n+2) {border-bottom: none;}
   .info-row .icon {width: 24px; height: 24px; border-radius: var(--radius); flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px;}
   .info-row .k {color: #999; flex: 0 0 auto; font-weight: 500;}
@@ -127,7 +129,7 @@
   table.dive-table td.idx {color: var(--muted-2); font-weight: 600;}
   table.dive-table td.max-depth {color: var(--purple); font-weight: 700;}
   table.dive-table td.time-cell {color: var(--muted);}
-  table.dive-table tr.dive-row.expanded td {background: var(--bg); border-bottom-color: #ccc;}
+  table.dive-table tr.dive-row.expanded td {background: var(--bg); border-bottom-color: #ddd;}
   table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
   /* table.dive-table tr.dive-chart-row .chart-block:first-child .chart-label {margin-top: 0;} */
 
@@ -141,7 +143,8 @@
   .chart-time-axis {display: flex; justify-content: space-between; padding: 0 1% 0 4%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace;}
   .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
 
-  .info-bar {padding: 12px; background: #f7f7fb; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: sticky; top: 52px; z-index: 10; border-bottom: 1px dashed #ccc;}
+  .info-bar-sentinel {height: 1px;}
+  .info-bar {padding: 12px; background: #f7f7fb; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: sticky; top: 98px; z-index: 10; border-bottom: 1px dashed #ccc; background: var(--bg);}
   .info-bar .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
   .info-bar .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
   .info-bar .cell.time .val {color: var(--text);}
@@ -150,7 +153,7 @@
   .info-bar .cell.temp .val {color: var(--temp);}
   .info-bar .cell.hr .val {color: var(--hr);}
 
-  .vspeed-summary {padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative;  border-bottom: 1px dashed #ccc;}
+  .vspeed-summary {padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative;  border-bottom: 1px dashed #ccc; background: var(--bg);}
   .vspeed-summary .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
   .vspeed-summary .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
   .vspeed-summary .cell.descent .val {color: var(--depth);}
@@ -216,26 +219,26 @@
         <div id="contentsHeadSentinel"></div>
         <div class="contents-head">
           <div class="tit">
-            <h3 class="title"><span class="icon" style="background:#e6f9f5;">📅</span> <span id="sessionTitle"></span></h3>
+            <h3 class="title"><span class="icon" style="background:#e6e9ff;">📅</span> <span id="sessionTitle"></span></h3>
             <button id="closeSession">✕</button>
           </div>
           <ul>
-            <li><span class="icon" style="background:#e6f9f5;">📉</span>최대수심 <strong id="sessMaxDepth">–</strong></li>
-            <li><span class="icon" style="background:#fff4e0;">⏳</span>최대 다이빙 시간 <strong id="sessMaxDiveTime">–</strong></li>
+            <li><span class="icon" style="background:#dcf6f2;">📉</span>최대수심 <strong id="sessMaxDepth">–</strong></li>
+            <li><span class="icon" style="background:#ffecd6;">⏳</span>최대 다이빙 시간 <strong id="sessMaxDiveTime">–</strong></li>
           </ul>
         </div>
         <div class="info-rows">
           <div class="info-row">
-            <span class="icon" style="background:#eaf1ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
+            <span class="icon" style="background:#d9f0ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sessDuration">–</span>
           </div>
           <div class="info-row">
-            <span class="icon" style="background:#efeafe;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
+            <span class="icon" style="background:#f2e6ff;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sessDiveCount">–</span>
           </div>
           <div class="info-row">
-            <span class="icon" style="background:var(--purple-light);">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
+            <span class="icon" style="background:#e0f7e0;">⏱</span><span class="k">시간</span><span class="v" id="sessTime">–</span>
           </div>
           <div class="info-row">
-            <span class="icon" style="background:#ffe9ee;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
+            <span class="icon" style="background:#ffe0e6;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sessAvgHr">–</span>
           </div>
         </div>
         <table class="dive-table">
@@ -689,6 +692,7 @@ function toggleDiveChartRow(tr, d){
   if (next && next.classList.contains('dive-chart-row')){
     const existingTd = next.querySelector('td');
     if (existingTd && existingTd._cleanupDrag) existingTd._cleanupDrag();
+    if (existingTd && existingTd._cleanupSticky) existingTd._cleanupSticky();
     next.remove();
     tr.classList.remove('expanded');
     return;
@@ -730,6 +734,7 @@ function renderInlineCharts(container, records){
       <div class="cell ascent"><div class="k">평균 상승</div><div class="val">${fmtVs(vs.avgAscent)}</div></div>
       <div class="cell ascent"><div class="k">최대 상승</div><div class="val">${fmtVs(vs.maxAscent)}</div></div>
     </div>
+    <div class="info-bar-sentinel"></div>
     <div class="info-bar">
       <div class="cell time"><div class="k">시간</div><div class="val" data-info="time">–</div></div>
       <div class="cell depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></div>
@@ -771,6 +776,16 @@ function renderInlineCharts(container, records){
 
   updateInlineCrosshair(container, null, records, geoms, chartIds);
   attachInlineDrag(container, records, geoms, chartIds);
+
+  const infoBar = container.querySelector('.info-bar');
+  const infoBarSentinel = container.querySelector('.info-bar-sentinel');
+  if (infoBar && infoBarSentinel){
+    const stickyObserver = new IntersectionObserver(([entry])=>{
+      infoBar.classList.toggle('fixed', !entry.isIntersecting);
+    }, {rootMargin: '-98px 0px 0px 0px', threshold: 0});
+    stickyObserver.observe(infoBarSentinel);
+    container._cleanupSticky = () => stickyObserver.disconnect();
+  }
 }
 
 function updateInlineCrosshair(container, idx, records, geoms, chartIds){

@@ -153,6 +153,12 @@
   .info-bar .cell.temp .val {color: var(--temp);}
   .info-bar .cell.hr .val {color: var(--hr);}
 
+
+  :has(.info-bar.fixed) .contents-head.fixed:after {box-shadow: none;}
+  .info-bar.fixed {border-color: transparent; z-index: 101;}
+  .info-bar.fixed:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); top: -0px; height: 1px; background: #ddd;}
+  .info-bar.fixed:before {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
+
   .vspeed-summary {padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative;  border-bottom: 1px dashed #ccc; background: var(--bg);}
   .vspeed-summary .cell .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
   .vspeed-summary .cell .val {font-size: 13px; margin-top: 8px; font-weight: 600;}

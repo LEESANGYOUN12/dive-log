@@ -580,6 +580,7 @@ function deleteSession(id){
   sessions = sessions.filter(s=>s.id!==id);
   saveSessions(sessions);
   if (selectedSessionId === id){
+    closeAllDiveCharts();
     selectedSessionId = null;
     $('#contents').style.display = 'none';
     $('#fixed-info-bar').style.display = 'none';
@@ -592,6 +593,7 @@ function deleteSession(id){
 function openSession(id){
   const s = sessions.find(x=>x.id===id);
   if (!s) return;
+  closeAllDiveCharts();
   selectedSessionId = id;
   $('#contents').style.display = '';
   $('#fixed-info-bar').style.display = '';
@@ -699,18 +701,32 @@ function svgChart(id, color, mode){
 
 const CHART_DEFS = [
   {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <b>수심</b> <span>(m)</span>'},
-  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <b>수직 속도</b> <span>(m/s)</span><!-- · 아래는 하강, 위는 상승-->'},
+  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <b>수직 속도</b> <span>(m/s)</span>'},
   {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <b>심박수</b> <span>(bpm)</span>'},
   {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <b>수온</b> <span>(℃)</span>'},
 ];
 
 /* ============================== INLINE ROW CHART (toggle) ============================== */
+// Tracks every currently-open chart <td> so its window-level drag listeners
+// and IntersectionObserver can be torn down even when the row is removed
+// some other way (closing the session, switching sessions, reset-all)
+// instead of only via the collapse click on the same row.
+let openChartContainers = [];
+function cleanupChartContainer(td){
+  if (!td) return;
+  if (td._cleanupDrag) td._cleanupDrag();
+  if (td._cleanupSticky) td._cleanupSticky();
+  const idx = openChartContainers.indexOf(td);
+  if (idx !== -1) openChartContainers.splice(idx, 1);
+}
+function closeAllDiveCharts(){
+  openChartContainers.slice().forEach(cleanupChartContainer);
+}
+
 function toggleDiveChartRow(tr, d){
   const next = tr.nextElementSibling;
   if (next && next.classList.contains('dive-chart-row')){
-    const existingTd = next.querySelector('td');
-    if (existingTd && existingTd._cleanupDrag) existingTd._cleanupDrag();
-    if (existingTd && existingTd._cleanupSticky) existingTd._cleanupSticky();
+    cleanupChartContainer(next.querySelector('td'));
     next.remove();
     tr.classList.remove('expanded');
     return;
@@ -725,6 +741,7 @@ function toggleDiveChartRow(tr, d){
   chartRow.appendChild(td);
   tr.after(chartRow);
   tr.classList.add('expanded');
+  openChartContainers.push(td);
   renderInlineCharts(td, records);
 }
 
@@ -956,7 +973,9 @@ function handleFiles(fileList){
         let sessionMaxDepth = 0;
         let gps = null;
 
+        let storageFailed = false;
         dives.forEach(seg=>{
+          if (storageFailed) return;
           const slice = withDerived(records.slice(seg.startIdx, seg.endIdx+1));
           const depths = slice.map(r=>r.depth).filter(v=>v!=null);
           const maxDepth = depths.length ? Math.max(...depths) : 0;
@@ -966,13 +985,13 @@ function handleFiles(fileList){
             if (withGps) gps = {lat:withGps.lat, lon:withGps.lon};
           }
           const diveId = 'd' + uploadedAt + '_' + seg.startIdx + '_' + Math.random().toString(36).slice(2,7);
+          if (!saveDiveRecords(diveId, slice)){ storageFailed = true; return; }
           diveMetas.push({
             id: diveId,
             startTime: slice[0].t,
             durationSec: slice[slice.length-1].t - slice[0].t,
             maxDepth
           });
-          saveDiveRecords(diveId, slice);
         });
 
         const sessionMeta = {
@@ -986,7 +1005,13 @@ function handleFiles(fileList){
           gps,
           fingerprint
         };
-        saveSessionDives(sessionId, diveMetas);
+        if (storageFailed || !saveSessionDives(sessionId, diveMetas)){
+          // Roll back whatever dive records did get written so we don't
+          // leave orphaned data with no session pointing at it.
+          diveMetas.forEach(dm=>deleteDiveRecords(dm.id));
+          toast(file.name + ': 저장 공간이 부족해 추가하지 못했어요');
+          return;
+        }
         sessions.push(sessionMeta);
         addedSessions++;
       } catch(err){
@@ -1039,6 +1064,7 @@ dropzone.addEventListener('drop', e=>{
 });
 
 $('#close-session').addEventListener('click', ()=>{
+  closeAllDiveCharts();
   selectedSessionId = null;
   $('#contents').style.display = 'none';
   $('#fixed-info-bar').style.display = 'none';
@@ -1047,6 +1073,7 @@ $('#close-session').addEventListener('click', ()=>{
 });
 $('#reset-all').addEventListener('click', ()=>{
   if (!confirm('업로드한 모든 다이빙 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+  closeAllDiveCharts();
   sessions.forEach(s=>{
     const dives = loadSessionDives(s.id);
     dives.forEach(d=>deleteDiveRecords(d.id));

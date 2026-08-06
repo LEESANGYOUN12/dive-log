@@ -927,7 +927,7 @@ function attachInlineDrag(container, records, geoms, chartIds){
   let activeSvg = svgs[0]; // the specific chart being touched — matters in box-view, where charts sit in different columns
   const n = records.length;
   const SLOP = 6; // 방향 판단 전 허용 오차(px)
-  const RELEASE_DY = 64; // 이 이상 세로로 벗어나면 가로 드래그로 확정됐어도 스크롤에 양보
+  const RELEASE_DY = 80; // 이 이상 세로로 벗어나면 가로 드래그로 확정됐어도 스크롤에 양보
 
   function indexFromClientX(clientX){
     const rect = activeSvg.getBoundingClientRect();

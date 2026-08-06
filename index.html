@@ -139,7 +139,8 @@
 
 
   .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 6px; min-width: 0;}
-  :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 6px;}
+  :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
+  :has(.chart-block-wrap.box-view ) .chart-label b {font-size: 13px;}
   .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     .chart-block {padding: 16px 6px;}
     .chart-block:nth-child(odd) {border-right: 1px dashed #ccc;}

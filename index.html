@@ -927,6 +927,7 @@ function attachInlineDrag(container, records, geoms, chartIds){
   let activeSvg = svgs[0]; // the specific chart being touched — matters in box-view, where charts sit in different columns
   const n = records.length;
   const SLOP = 6; // 방향 판단 전 허용 오차(px)
+  const RELEASE_DY = 48; // 이 이상 세로로 벗어나면 가로 드래그로 확정됐어도 스크롤에 양보
 
   function indexFromClientX(clientX){
     const rect = activeSvg.getBoundingClientRect();
@@ -948,7 +949,15 @@ function attachInlineDrag(container, records, geoms, chartIds){
     }
     if (axisLock === 'y') return; // 세로 이동은 스크롤에 양보
     if (!dragging) return;
-    if (isTouch) e.preventDefault();
+    if (isTouch){
+      // 가로 드래그로 확정된 뒤에도 손가락이 차트 밖으로 한참(세로로) 벗어나면
+      // preventDefault를 계속 걸어 스크롤을 막는 대신 놓아준다.
+      if (Math.abs(clientY - startY) > RELEASE_DY){
+        onUp();
+        return;
+      }
+      e.preventDefault();
+    }
     updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
   }
   function onDown(e){

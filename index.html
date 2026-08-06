@@ -52,7 +52,7 @@
     header {padding: 20px var(--pd);  border-bottom: 1px solid #ccc;
       .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
       h1 svg {width: 120px; height: auto;}
-      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; padding: 8px 12px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
+      label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
       label input {display: none;}
       label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
     }
@@ -72,7 +72,8 @@
   /* 상단 타이틀 */
   .section-title {font-size: 20px; font-weight: 700; color: var(--ac-01); margin: 16px 0 16px 0; display: flex; justify-content: space-between; align-items: center;
     h2 {color: var(--ac-01); font-size: 20px; font-weight: 700;}
-    button {display: none; font-size: 13px; font-weight: 400; cursor: pointer; padding: 6px 12px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
+    button {display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; font-size: 13px; font-weight: 400; cursor: pointer; width: 92px; background: var(--ac-02); border-radius: var(--radius); color: #fff;}
+    button span {font-size: 8px; font-weight: 700;}
   }
 
   /* 상단 셀렉트 없을시  */
@@ -94,37 +95,38 @@
     }
   }
 
-
   /* generic panel (session detail / dive detail) */
   .contents {padding-top: 16px;}
   #contents-head-sentinel {height: 1px;}
-  .contents-head {background: #fff; border-radius: var(--radius); margin-bottom: 16px; position: sticky; top: 0; z-index: 100;
-    .tit {position: relative; padding: 12px; border-bottom: 1px solid #ddd;}
-    .tit button {position: absolute; top: 50%; right: 12px; transform: translateY(-50%);}
-    .tit h3 {font-size: 16px; display: flex; align-items: center; gap: 8px;}
-    ul {display: grid; grid-template-columns: 1fr 1fr; align-items: center; color: #999; font-size: 12px; margin-top: 0px;}
-    ul li {display: flex; align-items: center; gap: 8px; padding: 12px; flex: 1;}
-    ul li:first-child {border-right: 1px solid #ddd;}
-    ul li strong {margin-left: auto; color: var(--purple);}
-    .icon {display: inline-flex; width: 24px; height: 24px; align-items: center; justify-content: center; border-radius: var(--radius); color: #fff; font-size: 11px;}
+  .contents-head {background: #fff;
+    ul {display: grid; grid-template-columns: 1fr 1fr; align-items: center; color: #999; font-size: 12px;}
+    li {display: flex; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid #ddd;}
+    li strong, li .v {margin-left: auto; font-weight: 600;}
+    li strong {color: var(--purple);}
+    li .k {color: #999; flex: 0 0 auto; font-weight: 500;}
+    li.tit {grid-column: 1 / -1;}
+    li.tit h3 {font-size: 16px; color: var(--text); display: flex; align-items: center; gap: 8px;}
+    .icon {display: inline-flex; width: 24px; height: 24px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: var(--radius); color: #fff; font-size: 11px;}
   }
-  .contents-head.fixed .tit {border-color: transparent;}
-  .contents-head.fixed .tit:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
+  .contents-head.head-title {border-radius: var(--radius) var(--radius) 0 0; position: sticky; top: 0; z-index: 100;
+    button {position: absolute; top: 12px; right: 12px; z-index: 101;}
+    li.tit + li {border-right: 1px solid #ddd;}
+  }
+  .contents-head.head-stats {border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 16px;
+    li:nth-child(odd) {border-right: 1px solid #ddd;}
+    li:nth-last-child(-n+2) {border-bottom: none;}
+  }
+  .contents-head.fixed ul {position: relative;}
+  .contents-head.fixed ul:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
+  .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
+  .contents-head.fixed li {border-color: transparent;}
+  .contents-head.fixed li.tit {position: relative;}
+  .contents-head.fixed li.tit:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
   .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
 
-  /*  */
-  .info-rows {display: grid; grid-template-columns: 1fr 1fr; border-radius: var(--radius); overflow: hidden; background: #fff; margin: 16px 0;}
-  .info-row {display: flex; align-items: center; gap: 8px; padding: 12px 12px; font-size: 12px; border-bottom: 1px solid #ddd;}
-  .info-row:nth-child(odd) {border-right: 1px solid #ddd;}
-  .info-row:nth-last-child(-n+2) {border-bottom: none;}
-  .info-row .icon {width: 24px; height: 24px; border-radius: var(--radius); flex: 0 0 auto; display: flex; align-items: center; justify-content: center; font-size: 11px;}
-  .info-row .k {color: #999; flex: 0 0 auto; font-weight: 500;}
-  .info-row .v {font-weight: 600; margin-left: auto;}
-  .info-row .v b {color: var(--purple);}
 
 
-
-  table.dive-table {width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 16px; /* overflow: hidden; */ box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
+  table.dive-table {width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 8px; /* overflow: hidden; */ box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
   table.dive-table th {font-weight: 600; text-align: center; padding: 12px 4px; border-bottom: 1px solid var(--line);}
   table.dive-table td {padding: 12px 10px; border-bottom: 1px solid rgba(30,20,60,.05); text-align: center;}
   table.dive-table tr.dive-row {cursor: pointer; border-radius: 12px;}
@@ -136,17 +138,23 @@
   table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
 
 
-  .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 12px;}
-  .chart-label {display: flex; align-items: center; gap: 2px; color: var(--muted); margin-bottom: 12px; justify-content: center;}
+  .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 6px; min-width: 0;}
+  .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    .chart-block:nth-child(odd) {border-right: 1px dashed #ccc;}
+    .chart-block:nth-last-child(-n+2) {border-bottom: none;}
+  }
+  .chart-label {display: flex; align-items: center; gap: 4px; color: var(--muted); margin-bottom: 12px; justify-content: center;}
   .chart-label b {color: var(--text); font-weight: 700; font-size: 16px;}
   .chart-label span {color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; position: relative; top: 2px;}
-  svg.chart {width: 100%; height: 110px; display: block; touch-action: pan-y;}
-  .chart-time-axis {display: flex; justify-content: space-between; padding: 0 1% 0 4%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace;}
+  svg.chart {width: 100%; height: 140px; display: block; touch-action: pan-y;}
+  .chart-time-axis {display: flex; justify-content: space-between; padding: 0 4% 0 1%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace; position: relative; top: -6px;}
+  .chart-block-wrap.box-view .chart-time-axis span:nth-child(even) {display: none;}
   .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
 
   .info-bar-sentinel {height: 1px;}
 
-  .info-bar {padding: 12px; background: var(--bg); display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; text-align: center; position: relative; z-index: 10; border-bottom: 1px dashed #ccc;}
+  .info-bar {padding: 12px 0; background: var(--bg); text-align: center; position: relative; z-index: 10; border-bottom: 1px dashed #ccc; display: flex; align-items: center;}
+  .info-bar ul {display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 0px; flex: 1;}
   .info-bar li .k {font-size: 10px; color: var(--muted-2); font-weight: 600;}
   .info-bar li .val {font-size: 13px; margin-top: 8px; font-weight: 600;}
   .info-bar li.time .val {color: var(--text);}
@@ -156,14 +164,12 @@
   .info-bar li.hr .val {color: var(--hr);}
   .info-bar li.descent .val {color: var(--depth);}
   .info-bar li.ascent .val {color: var(--ascent);}
-
-  /* :has(.info-bar.fixed) .contents-head.fixed:after {box-shadow: none;}
-  .info-bar.fixed {border-color: transparent; z-index: 101; position: sticky; top: 98px;}
-  .info-bar.fixed:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); top: -0px; height: 1px; background: #ddd;}
-  .info-bar.fixed:before {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);} */
-
   body.has-fixed-info-bar {padding-bottom: 60px;}
   .info-bar-fixed {position: fixed; left: 0; right: 0; top: auto; bottom: 0; z-index: 100; border: none; background: #fff; box-shadow: 0 -8px 24px -14px rgba(20,20,50,.2); padding: 8px 0; border-top: 1px solid #ddd;}
+  .chart-view-toggle {display: flex; justify-content: center; margin: 0 var(--pd);
+    button {display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; color: var(--ac-01); background: var(--purple-light); border-radius: 999px;}
+    svg {width: 14px; height: 14px; fill: currentColor;}
+  }
 
   .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--text); color: #fff; padding: 12px 20px; border-radius: 999px; font-size: 12px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 9999;}
   .toast.show {opacity: 1; transform: translateX(-50%) translateY(4px);}
@@ -204,7 +210,7 @@
           </g>
         </svg>
       </h1>
-      <label id="dropzone"> <span>＋ FIT 파일 추가</span> <input type="file" id="file-input" accept=".fit" multiple> </label>
+      <label id="dropzone"> <span>＋ FIT ADD</span> <input type="file" id="file-input" accept=".fit" multiple> </label>
     </div>
   </header>
 
@@ -212,7 +218,7 @@
     <div class="inner">
       <section class="section-title">
         <h2>FIT 업로드 파일</h2>
-        <button id="reset-all">전체 초기화</button>
+        <button id="reset-all"><span>✕</span> 전체 초기화</button>
       </section>
 
       <section id="session-list-wrap">
@@ -223,29 +229,21 @@
       <!-- SESSION DETAIL: date / time / gps + table of dives -->
       <div class="contents" id="contents" style="display:none;">
         <div id="contents-head-sentinel"></div>
-        <section class="contents-head">
-          <div class="tit">
-            <h3 class="title"><span class="icon" style="background:#e6e9ff;">📅</span> <span id="session-title"></span></h3>
-            <button id="close-session">✕</button>
-          </div>
+        <section class="contents-head head-title">
+          <button id="close-session">✕</button>
           <ul>
+            <li class="tit"><h3><span class="icon" style="background:#e6e9ff;">📅</span> <span id="session-title"></span></h3></li>
             <li><span class="icon" style="background:#dcf6f2;">📉</span>최대수심 <strong id="sess-max-depth">–</strong></li>
             <li><span class="icon" style="background:#ffecd6;">⏳</span>최대 다이빙 시간 <strong id="sess-max-dive-time">–</strong></li>
           </ul>
         </section>
-        <section class="info-rows">
-          <div class="info-row">
-            <span class="icon" style="background:#d9f0ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sess-duration">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon" style="background:#f2e6ff;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sess-dive-count">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon" style="background:#e0f7e0;">⏱</span><span class="k">시간</span><span class="v" id="sess-time">–</span>
-          </div>
-          <div class="info-row">
-            <span class="icon" style="background:#ffe0e6;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sess-avg-hr">–</span>
-          </div>
+        <section class="contents-head head-stats">
+          <ul>
+            <li><span class="icon" style="background:#d9f0ff;">🏊</span><span class="k">총 다이빙 시간</span><span class="v" id="sess-duration">–</span></li>
+            <li><span class="icon" style="background:#f2e6ff;">🔢</span><span class="k">총 다이빙 횟수</span><span class="v" id="sess-dive-count">–</span></li>
+            <li><span class="icon" style="background:#e0f7e0;">⏱️</span><span class="k">시간</span><span class="v" id="sess-time">–</span></li>
+            <li><span class="icon" style="background:#ffe0e6;">❤️</span><span class="k">평균 심박수</span><span class="v" id="sess-avg-hr">–</span></li>
+          </ul>
         </section>
         <table class="dive-table">
           <colgroup>
@@ -269,13 +267,23 @@
     </div>
   </main>
 
-  <ul class="info-bar info-bar-fixed" id="fixed-info-bar" style="display:none;">
-    <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
-    <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
-    <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
-    <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
-    <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
-  </ul>
+  <section class="info-bar info-bar-fixed" id="fixed-info-bar" style="display:none;">
+    <ul>
+      <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
+      <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
+      <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
+      <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
+      <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
+    </ul>
+    <div class="chart-view-toggle">
+      <button id="chart-view-list" title="리스트형" aria-label="리스트형">
+        <svg viewBox="0 0 16 16"><rect y="2" width="16" height="2.2" rx="1"/><rect y="6.9" width="16" height="2.2" rx="1"/><rect y="11.8" width="16" height="2.2" rx="1"/></svg>
+      </button>
+      <button id="chart-view-box" title="박스형" aria-label="박스형">
+        <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      </button>
+    </div>
+  </section>
 
   <footer>
     <p>Amazfit - Zepp에서 내보낸 .fit 파일을 올리면 <br>다이빙별 기록으로 정리됩니다. <br>크롬 브라우저 사용을 권장 합니다.</p>
@@ -553,7 +561,7 @@ function renderSessionList(){
   }
   empty.style.display = 'none';
   strip.style.display = '';
-  resetAll.style.display = 'inline-block';
+  resetAll.style.display = 'flex';
   strip.innerHTML = '';
   sessions.slice().sort((a,b)=>b.startTime-a.startTime).forEach(s=>{
     const chip = document.createElement('li');
@@ -583,8 +591,6 @@ function deleteSession(id){
     closeAllDiveCharts();
     selectedSessionId = null;
     $('#contents').style.display = 'none';
-    $('#fixed-info-bar').style.display = 'none';
-    document.body.classList.remove('has-fixed-info-bar');
   }
   renderSessionList();
   toast('업로드 기록을 삭제했어요');
@@ -596,8 +602,6 @@ function openSession(id){
   closeAllDiveCharts();
   selectedSessionId = id;
   $('#contents').style.display = '';
-  $('#fixed-info-bar').style.display = '';
-  document.body.classList.add('has-fixed-info-bar');
   $('#session-title').textContent = fmtDateFull(s.startTime);
   $('#sess-time').textContent = fmtClock(s.startTime) + ' – ' + fmtClock(s.endTime);
   $('#sess-duration').textContent = fmtTime(s.endTime - s.startTime);
@@ -634,8 +638,9 @@ function openSession(id){
 }
 
 /* ============================== CHART RENDERING ============================== */
-const CHART_W = 600, CHART_H = 110;
-const PAD = {l:38, r:10, t:10, b:16};
+const CHART_W = 600, CHART_H = 132;
+const DOT_R = 3.2;
+const PAD = {l:10, r:64, t:10, b:16};
 
 function computeScale(values, mode){
   const nums = values.filter(v=>v!=null);
@@ -693,9 +698,9 @@ function svgChart(id, color, mode){
     <path id="${id}-area" fill="url(#${id}-fill)" stroke="none" d=""></path>
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
-    <ellipse id="${id}-dot" rx="3.2" ry="3.2" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" x="${PAD.l-4}" y="${PAD.t+4}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
-    <text id="${id}-min" x="${PAD.l-4}" y="${CHART_H-PAD.b}" text-anchor="end" font-size="12" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <ellipse id="${id}-dot" rx="${DOT_R}" ry="${DOT_R}" fill="${color}" style="display:none;"/>
+    <text id="${id}-max" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="11" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
+    <text id="${id}-min" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="11" fill="#93aab1" font-family="JetBrains Mono, monospace"></text>
   </svg>`;
 }
 
@@ -706,18 +711,47 @@ const CHART_DEFS = [
   {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <b>수온</b> <span>(℃)</span>'},
 ];
 
+// Shared across every open dive's chart-block-wrap, so switching the view
+// mode once (via the fixed bottom bar) re-flows all of them at once.
+let chartViewMode = 'list';
+function applyChartViewMode(){
+  document.querySelectorAll('.chart-block-wrap').forEach(el=>{
+    el.classList.toggle('box-view', chartViewMode === 'box');
+  });
+  $('#chart-view-list').style.display = chartViewMode === 'box' ? '' : 'none';
+  $('#chart-view-box').style.display = chartViewMode === 'list' ? '' : 'none';
+  // Re-flowing the wrap changes each chart's rendered width, so any
+  // crosshair dot left visible from before the toggle has a stale rx
+  // (computed against the old width) and renders as a squashed ellipse.
+  document.querySelectorAll('svg.chart').forEach(svgEl=>{
+    const dot = svgEl.querySelector('ellipse[id$="-dot"]');
+    if (!dot || dot.style.display === 'none') return;
+    const scaleX = (svgEl.getBoundingClientRect().width / CHART_W) || 1;
+    dot.setAttribute('rx', (DOT_R/scaleX).toFixed(2));
+  });
+}
+
 /* ============================== INLINE ROW CHART (toggle) ============================== */
 // Tracks every currently-open chart <td> so its window-level drag listeners
 // and IntersectionObserver can be torn down even when the row is removed
 // some other way (closing the session, switching sessions, reset-all)
 // instead of only via the collapse click on the same row.
 let openChartContainers = [];
+// fixed-info-bar is only meaningful while a dive chart is open (it mirrors
+// the crosshair being scrubbed on one), so its visibility just tracks
+// whether any chart row is currently expanded.
+function syncFixedInfoBar(){
+  const show = openChartContainers.length > 0;
+  $('#fixed-info-bar').style.display = show ? '' : 'none';
+  document.body.classList.toggle('has-fixed-info-bar', show);
+}
 function cleanupChartContainer(td){
   if (!td) return;
   if (td._cleanupDrag) td._cleanupDrag();
   if (td._cleanupSticky) td._cleanupSticky();
   const idx = openChartContainers.indexOf(td);
   if (idx !== -1) openChartContainers.splice(idx, 1);
+  syncFixedInfoBar();
 }
 function closeAllDiveCharts(){
   openChartContainers.slice().forEach(cleanupChartContainer);
@@ -742,6 +776,7 @@ function toggleDiveChartRow(tr, d){
   tr.after(chartRow);
   tr.classList.add('expanded');
   openChartContainers.push(td);
+  syncFixedInfoBar();
   renderInlineCharts(td, records);
 }
 
@@ -763,20 +798,24 @@ function renderInlineCharts(container, records){
   const vs = computeVSpeedStats(records);
   const fmtVs = CHART_DEFS.find(d=>d.key==='vSpeed').fmt;
   container.innerHTML = `
-    <ul class="info-bar">
-      <li class="descent"><div class="k">평균 하강</div><div class="val">${fmtVs(vs.avgDescent)}</div></li>
-      <li class="descent"><div class="k">최대 하강</div><div class="val">${fmtVs(vs.maxDescent)}</div></li>
-      <li class="ascent"><div class="k">평균 상승</div><div class="val">${fmtVs(vs.avgAscent)}</div></li>
-      <li class="ascent"><div class="k">최대 상승</div><div class="val">${fmtVs(vs.maxAscent)}</div></li>
-    </ul>
+    <div class="info-bar">
+      <ul>
+        <li class="descent"><div class="k">평균 하강</div><div class="val">${fmtVs(vs.avgDescent)}</div></li>
+        <li class="descent"><div class="k">최대 하강</div><div class="val">${fmtVs(vs.maxDescent)}</div></li>
+        <li class="ascent"><div class="k">평균 상승</div><div class="val">${fmtVs(vs.avgAscent)}</div></li>
+        <li class="ascent"><div class="k">최대 상승</div><div class="val">${fmtVs(vs.maxAscent)}</div></li>
+      </ul>
+    </div>
     <div class="info-bar-sentinel"></div>
-    <ul class="info-bar">
-      <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
-      <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
-      <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
-      <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
-      <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
-    </ul>
+    <div class="info-bar">
+      <ul>
+        <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
+        <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
+        <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
+        <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
+        <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
+      </ul>
+    </div>
     <div class="chart-block-wrap">
       ${CHART_DEFS.map(def=>`
       <div class="chart-block">
@@ -808,6 +847,8 @@ function renderInlineCharts(container, records){
     wrap.querySelector(`#${chartId}-max`).textContent = def.fmt(geo.scale.max);
     wrap.querySelector(`#${chartId}-min`).textContent = def.fmt(geo.scale.min);
   });
+
+  container.querySelector('.chart-block-wrap').classList.toggle('box-view', chartViewMode === 'box');
 
   updateInlineCrosshair(container, null, records, geoms, chartIds);
   attachInlineDrag(container, records, geoms, chartIds);
@@ -866,7 +907,7 @@ function updateInlineCrosshair(container, idx, records, geoms, chartIds){
     ch.style.display = '';
     if (p.y != null){
       const scaleX = svgEl ? (svgEl.getBoundingClientRect().width / CHART_W) || 1 : 1;
-      dot.setAttribute('rx', (3.2/scaleX).toFixed(2));
+      dot.setAttribute('rx', (DOT_R/scaleX).toFixed(2));
       dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
       dot.style.display = '';
     } else {
@@ -880,11 +921,12 @@ function attachInlineDrag(container, records, geoms, chartIds){
   if (svgs.length === 0) return;
   let dragging = false;
   let startX = 0, startY = 0, axisLock = null; // axisLock: null(미정) | 'x'(차트 드래그) | 'y'(스크롤 양보)
+  let activeSvg = svgs[0]; // the specific chart being touched — matters in box-view, where charts sit in different columns
   const n = records.length;
   const SLOP = 6; // 방향 판단 전 허용 오차(px)
 
   function indexFromClientX(clientX){
-    const rect = svgs[0].getBoundingClientRect();
+    const rect = activeSvg.getBoundingClientRect();
     const relX = ((clientX - rect.left)/rect.width) * CHART_W;
     const innerW = CHART_W - PAD.l - PAD.r;
     const frac = (relX - PAD.l)/innerW;
@@ -907,6 +949,7 @@ function attachInlineDrag(container, records, geoms, chartIds){
     updateInlineCrosshair(container, indexFromClientX(clientX), records, geoms, chartIds);
   }
   function onDown(e){
+    activeSvg = e.currentTarget;
     const isTouch = !!e.touches;
     const clientX = isTouch ? e.touches[0].clientX : e.clientX;
     const clientY = isTouch ? e.touches[0].clientY : e.clientY;
@@ -1051,6 +1094,9 @@ function finishUpload(addedSessions){
     }, {threshold: 0}).observe(sentinel);
   }
 }
+applyChartViewMode();
+$('#chart-view-list').addEventListener('click', ()=>{ chartViewMode = 'list'; applyChartViewMode(); });
+$('#chart-view-box').addEventListener('click', ()=>{ chartViewMode = 'box'; applyChartViewMode(); });
 $('#file-input').addEventListener('change', (e)=>{
   handleFiles(e.target.files);
   e.target.value = '';
@@ -1067,8 +1113,6 @@ $('#close-session').addEventListener('click', ()=>{
   closeAllDiveCharts();
   selectedSessionId = null;
   $('#contents').style.display = 'none';
-  $('#fixed-info-bar').style.display = 'none';
-  document.body.classList.remove('has-fixed-info-bar');
   renderSessionList();
 });
 $('#reset-all').addEventListener('click', ()=>{
@@ -1083,8 +1127,6 @@ $('#reset-all').addEventListener('click', ()=>{
   saveSessions(sessions);
   selectedSessionId = null;
   $('#contents').style.display = 'none';
-  $('#fixed-info-bar').style.display = 'none';
-  document.body.classList.remove('has-fixed-info-bar');
   renderSessionList();
   toast('모두 초기화했어요');
 });

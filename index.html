@@ -713,7 +713,7 @@ const CHART_DEFS = [
 
 // Shared across every open dive's chart-block-wrap, so switching the view
 // mode once (via the fixed bottom bar) re-flows all of them at once.
-let chartViewMode = 'list';
+let chartViewMode = lsGet('chartViewMode') === 'box' ? 'box' : 'list';
 function applyChartViewMode(){
   document.querySelectorAll('.chart-block-wrap').forEach(el=>{
     el.classList.toggle('box-view', chartViewMode === 'box');
@@ -1095,8 +1095,8 @@ function finishUpload(addedSessions){
   }
 }
 applyChartViewMode();
-$('#chart-view-list').addEventListener('click', ()=>{ chartViewMode = 'list'; applyChartViewMode(); });
-$('#chart-view-box').addEventListener('click', ()=>{ chartViewMode = 'box'; applyChartViewMode(); });
+$('#chart-view-list').addEventListener('click', ()=>{ chartViewMode = 'list'; lsSet('chartViewMode', chartViewMode); applyChartViewMode(); });
+$('#chart-view-box').addEventListener('click', ()=>{ chartViewMode = 'box'; lsSet('chartViewMode', chartViewMode); applyChartViewMode(); });
 $('#file-input').addEventListener('change', (e)=>{
   handleFiles(e.target.files);
   e.target.value = '';

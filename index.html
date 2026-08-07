@@ -124,7 +124,11 @@
   .contents-head.fixed li.tit:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
   .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: #fff; z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
 
-
+  @media (min-width: 900px) {
+    .contents-head.head-title.fixed {position: fixed; left: 0; right: 0;}
+    /* .contents-head.fixed ul:after {content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: #ddd; z-index: 1;}
+    .contents-head.fixed:after {content: ''; position: absolute; left: 0; right: 0;} */
+  }
 
   table.dive-table {width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 8px; /* overflow: hidden; */ box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
   table.dive-table th {font-weight: 600; text-align: center; padding: 12px 4px; border-bottom: 1px solid var(--line);}
@@ -275,8 +279,8 @@
       <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
       <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
       <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
-      <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
       <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
+      <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
     </ul>
     <div class="chart-view-toggle">
       <button id="chart-view-list" title="리스트형" aria-label="리스트형">
@@ -815,8 +819,8 @@ function renderInlineCharts(container, records){
         <li class="time"><div class="k">시간</div><div class="val" data-info="time">–</div></li>
         <li class="depth"><div class="k">수심</div><div class="val" data-info="depth">–</div></li>
         <li class="vs"><div class="k">속도</div><div class="val" data-info="vs">–</div></li>
-        <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
         <li class="hr"><div class="k">심박</div><div class="val" data-info="hr">–</div></li>
+        <li class="temp"><div class="k">수온</div><div class="val" data-info="temp">–</div></li>
       </ul>
     </div>
     <div class="chart-block-wrap">

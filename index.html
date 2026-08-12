@@ -926,7 +926,7 @@ function updateInlineCrosshair(container, idx, records, geoms, chartIds){
   const t0 = records[0].t;
   setInfo('time', fmtTime(r.t - t0));
   setInfo('depth', r.depth==null? '–' : r.depth.toFixed(1)+'m');
-  setInfo('vs', r.vSpeed==null? '–' : (r.vSpeed>=0?'+':'')+r.vSpeed.toFixed(2));
+  setInfo('vs', r.vSpeed==null? '–' : (r.vSpeed>=0?'+':'')+r.vSpeed.toFixed(2)+'m/s');
   setInfo('temp', r.temp==null? '–' : r.temp.toFixed(1)+'℃');
   setInfo('hr', r.hr==null? '–' : Math.round(r.hr)+'bpm');
 

@@ -142,18 +142,21 @@
   table.dive-table tr.dive-chart-row td {background: #f7f7fb; padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
 
 
-  .chart-block {border-bottom: 1px dashed #ccc; padding: 24px 6px; min-width: 0;}
+  .chart-block {border-bottom: 2px dashed #ccc; padding: 24px 6px; min-width: 0;}
   :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
-  :has(.chart-block-wrap.box-view ) .chart-label b {font-size: 13px;}
+  :has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 13px;}
   .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     .chart-block {padding: 16px 6px;}
     .chart-block:nth-child(odd) {border-right: 1px dashed #ccc;}
     .chart-block:nth-last-child(-n+2) {border-bottom: none;}
   }
-  .chart-label {display: flex; align-items: center; gap: 4px; color: var(--muted); margin-bottom: 4px; justify-content: center;}
-  .chart-label h4 {display: contents; font-size: inherit; font-weight: inherit;}
-  .chart-label strong {color: var(--text); font-weight: 700; font-size: 16px;}
-  .chart-label span {color: var(--muted); font-size: 12px; font-family: 'JetBrains Mono', monospace; position: relative; top: 2px;}
+  .chart-label {color: var(--muted); margin-bottom: 8px;}
+  .chart-label h4 {font-size: 18px; }
+  .chart-label h4 strong {color: var(--text); font-weight: 700;}
+  .chart-label h4 span {font-size: 12px;}
+  .chart-label ul {display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px;}
+  .chart-label ul li {}
+  .chart-label li span {color: var(--text); /* font-weight: 700; */}
   svg.chart {width: 100%; height: 140px; display: block; touch-action: pan-y;}
   .chart-time-axis {display: flex; justify-content: space-between; padding: 0 4% 0 1%; font-size: 10px; color: var(--muted-2); font-family: 'JetBrains Mono', monospace; margin-top: -8px;}
   .chart-block-wrap.box-view .chart-time-axis span:nth-child(even) {display: none;}
@@ -714,7 +717,7 @@ function svgChart(id, color, mode){
 
 const CHART_DEFS = [
   {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <strong>수심</strong> <span>(m)</span>'},
-  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'⚡ <strong>수직 속도</strong> <span>(m/s)</span>'},
+  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'〽️ <strong>수직 속도</strong> <span>(m/s)</span>'},
   {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <strong>심박수</strong> <span>(bpm)</span>'},
   {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <strong>수온</strong> <span>(℃)</span>'},
 ];
@@ -788,6 +791,23 @@ function toggleDiveChartRow(tr, d){
   renderInlineCharts(td, records);
 }
 
+function chartLabelSubStats(def, records, vs){
+  const values = records.map(r=>r[def.key]).filter(v=>v!=null);
+  if (!values.length) return [];
+  switch(def.key){
+    case 'depth':
+      return [['최대수심', def.fmt(Math.max(...values))]];
+    case 'vSpeed':
+      return [['평균하강속도', def.fmt(vs.avgDescent)], ['평균상승속도', def.fmt(vs.avgAscent)]];
+    case 'hr':
+      return [['평균', def.fmt(values.reduce((a,b)=>a+b,0)/values.length)], ['최대', def.fmt(Math.max(...values))]];
+    case 'temp':
+      return [['최저', def.fmt(Math.min(...values))], ['최고', def.fmt(Math.max(...values))]];
+    default:
+      return [];
+  }
+}
+
 function computeVSpeedStats(records){
   const descents = records.map(r=>r.vSpeed).filter(v=>v!=null && v<0);
   const ascents = records.map(r=>r.vSpeed).filter(v=>v!=null && v>0);
@@ -825,12 +845,16 @@ function renderInlineCharts(container, records){
       </ul>
     </div>
     <div class="chart-block-wrap">
-      ${CHART_DEFS.map(def=>`
+      ${CHART_DEFS.map(def=>{
+        const subStats = chartLabelSubStats(def, records, vs);
+        const subHtml = subStats.length ? `<ul>${subStats.map(([k,v])=>`<li>${k} <span>${v}</span></li>`).join('')}</ul>` : '';
+        return `
       <div class="chart-block">
-        <div class="chart-label"><h4>${def.label}</h4></div>
+        <div class="chart-label"><h4>${def.label}</h4>${subHtml}</div>
         <div data-key="${def.key}"></div>
         <div class="chart-time-axis">${[0,1,2,3,4,5,6].map(i=>`<span>${fmtTime(totalSec*i/6).replace(/^0/,'')}</span>`).join('')}</div>
-      </div>`).join('')}
+      </div>`;
+      }).join('')}
     </div>`;
 
   const geoms = {};

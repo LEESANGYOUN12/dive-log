@@ -539,7 +539,7 @@ const fmtTime = (sec) => {
 const fmtDateShort = (unixSec) => {
   const d = new Date(unixSec*1000);
   const days = ['일','월','화','수','목','금','토'];
-  return String(d.getFullYear()%100).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' ('+days[d.getDay()]+')';
+  return String(d.getFullYear()%100).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+'('+days[d.getDay()]+')';
 };
 const fmtDateFull = (unixSec) => {
   const d = new Date(unixSec*1000);

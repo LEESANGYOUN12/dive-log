@@ -578,7 +578,7 @@ function renderSessionList(){
   strip.style.display = '';
   resetAll.style.display = 'flex';
   strip.innerHTML = '';
-  sessions.slice().sort((a,b)=>b.startTime-a.startTime).forEach(s=>{
+  sessions.slice().sort((a,b)=>a.startTime-b.startTime).forEach(s=>{
     const chip = document.createElement('li');
     chip.className = selectedSessionId===s.id ? 'selected' : '';
     chip.innerHTML = `

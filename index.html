@@ -1101,7 +1101,7 @@ function attachInlineDrag(container, records, geoms, chartIds){
 function handleFiles(fileList){
   const files = Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.fit'));
   if (files.length === 0){ toast('.fit 파일만 업로드할 수 있어요'); return; }
-  let addedSessions = 0;
+  const newSessions = [];
   let pending = files.length;
 
   files.forEach(file=>{
@@ -1170,30 +1170,33 @@ function handleFiles(fileList){
           return;
         }
         sessions.push(sessionMeta);
-        addedSessions++;
+        newSessions.push(sessionMeta);
       } catch(err){
         console.error(err);
         toast(file.name + ': 분석에 실패했어요 (' + err.message + ')');
       } finally {
         pending--;
-        if (pending === 0) finishUpload(addedSessions);
+        if (pending === 0) finishUpload(newSessions);
       }
     };
     reader.onerror = () => {
       toast(file.name + ': 파일을 읽지 못했어요');
       pending--;
-      if (pending === 0) finishUpload(addedSessions);
+      if (pending === 0) finishUpload(newSessions);
     };
     reader.readAsArrayBuffer(file);
   });
 }
 
-function finishUpload(addedSessions){
-  if (addedSessions > 0){
+function finishUpload(newSessions){
+  if (newSessions.length > 0){
     saveSessions(sessions);
+    // 새로 올린 파일이 현재 연/월 필터에 가려 안 보이는 일이 없도록 필터를 초기화한다.
+    filterYear = '';
+    filterMonth = '';
     renderSessionList();
-    toast(addedSessions + '개의 업로드를 추가했어요');
-    const newest = sessions.slice().sort((a,b)=>b.startTime-a.startTime)[0];
+    toast(newSessions.length + '개의 업로드를 추가했어요');
+    const newest = newSessions.slice().sort((a,b)=>b.startTime-a.startTime)[0];
     if (newest) openSession(newest.id);
   }
 }

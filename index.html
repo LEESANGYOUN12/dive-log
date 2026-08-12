@@ -80,6 +80,14 @@
   .select-none {padding: 24px; text-align: center; color: var(--ac-02); background: #fff; border-radius: var(--radius); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer; border: 2px dashed var(--ac-02); font-size: 14px; font-weight: 600;
     &:hover {border-color: var(--ac-01); color: var(--ac-01);}
   }
+  #select-empty-filtered {cursor: default;
+    &:hover {border-color: var(--ac-02); color: var(--ac-02);}
+  }
+
+  /* 연/월 필터 */
+  .select-search {display: flex; gap: 8px; margin-bottom: 16px;
+    select {flex: 1; appearance: auto; background: #fff; border-radius: var(--radius); padding: 14px 8px; font-size: 14px; font-weight: 700; color: var(--ac-01); box-shadow: 0 12px 28px -18px rgba(30,20,70,.16); cursor: pointer;}
+  }
 
   /* 선택 */
   .select-list {display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 6px; /* max-height: 262px; overflow-y: auto; */
@@ -236,8 +244,18 @@
         <button id="reset-all"><span>✕</span> 전체 초기화</button>
       </section>
 
+      <section class="select-search" id="select-search" style="display:none;">
+        <select id="filter-year">
+          <option value="">전체</option>
+        </select>
+        <select id="filter-month" style="display:none;">
+          <option value="">전체</option>
+        </select>
+      </section>
+
       <section id="session-list-wrap">
         <h3 class="select-none" id="select-none">아직 업로드된 다이빙이 없어요.<br>여기 또는 위 버튼을 클릭하여 .fit 파일을 추가해보세요.</h3>
+        <h3 class="select-none" id="select-empty-filtered" style="display:none;">선택한 기간에 해당하는 기록이 없어요.</h3>
         <ul class="select-list" id="select-list" style="display:none;"></ul>
       </section>
 
@@ -564,21 +582,72 @@ function toast(msg){
 }
 
 /* ============================== SESSION LIST ============================== */
+let filterYear = '';
+let filterMonth = '';
+
+function getFilteredSessions(){
+  return sessions.filter(s=>{
+    if (!filterYear) return true;
+    const d = new Date(s.startTime*1000);
+    if (String(d.getFullYear()) !== filterYear) return false;
+    if (filterMonth && String(d.getMonth()+1) !== filterMonth) return false;
+    return true;
+  });
+}
+
+function syncFilterSelects(){
+  const yearSel = $('#filter-year');
+  const monthSel = $('#filter-month');
+  const years = Array.from(new Set(sessions.map(s=>new Date(s.startTime*1000).getFullYear()))).sort((a,b)=>b-a);
+  if (!years.includes(Number(filterYear))){ filterYear = ''; filterMonth = ''; }
+  yearSel.innerHTML = `<option value="">전체</option>` + years.map(y=>`<option value="${y}">${y}년</option>`).join('');
+  yearSel.value = filterYear;
+
+  if (filterYear){
+    const months = Array.from(new Set(
+      sessions.filter(s=>new Date(s.startTime*1000).getFullYear()===Number(filterYear))
+        .map(s=>new Date(s.startTime*1000).getMonth()+1)
+    )).sort((a,b)=>a-b);
+    if (!months.includes(Number(filterMonth))) filterMonth = '';
+    monthSel.innerHTML = `<option value="">전체</option>` + months.map(m=>`<option value="${m}">${m}월</option>`).join('');
+    monthSel.value = filterMonth;
+    monthSel.style.display = '';
+  } else {
+    filterMonth = '';
+    monthSel.style.display = 'none';
+  }
+}
+
 function renderSessionList(){
   const strip = $('#select-list');
   const empty = $('#select-none');
+  const emptyFiltered = $('#select-empty-filtered');
   const resetAll = $('#reset-all');
+  const searchWrap = $('#select-search');
   if (sessions.length === 0){
+    searchWrap.style.display = 'none';
     empty.style.display = '';
+    emptyFiltered.style.display = 'none';
     strip.style.display = 'none';
     resetAll.style.display = 'none';
     return;
   }
-  empty.style.display = 'none';
-  strip.style.display = '';
+  searchWrap.style.display = 'flex';
   resetAll.style.display = 'flex';
+  syncFilterSelects();
+
+  const filtered = getFilteredSessions();
+  if (filtered.length === 0){
+    empty.style.display = 'none';
+    emptyFiltered.style.display = '';
+    strip.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  emptyFiltered.style.display = 'none';
+  strip.style.display = '';
   strip.innerHTML = '';
-  sessions.slice().sort((a,b)=>a.startTime-b.startTime).forEach(s=>{
+  filtered.slice().sort((a,b)=>a.startTime-b.startTime).forEach(s=>{
     const chip = document.createElement('li');
     chip.className = selectedSessionId===s.id ? 'selected' : '';
     chip.innerHTML = `
@@ -1147,6 +1216,15 @@ $('#file-input').addEventListener('change', (e)=>{
   e.target.value = '';
 });
 $('#select-none').addEventListener('click', ()=>$('#file-input').click());
+$('#filter-year').addEventListener('change', (e)=>{
+  filterYear = e.target.value;
+  filterMonth = '';
+  renderSessionList();
+});
+$('#filter-month').addEventListener('change', (e)=>{
+  filterMonth = e.target.value;
+  renderSessionList();
+});
 const dropzone = $('#dropzone');
 ['dragover'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.add('drag-over'); }));
 ['dragleave','drop'].forEach(evt=>dropzone.addEventListener(evt, e=>{ e.preventDefault(); dropzone.classList.remove('drag-over'); }));

@@ -89,7 +89,7 @@
       ul {margin-top: 8px; display: flex; justify-content: space-between; align-items: center;}
       ul li:first-child {display: inline-block; background: #f6b93b; color: #fff; font-size: 12px; padding: 4px 6px; border-radius: var(--radius);}
       ul li:last-child {color: var(--muted); font-size: 12px;}
-      button {position: absolute; top: 12px; right: 8px; font-size: 14px; line-height: 1; cursor: pointer; padding: 3px;
+      button {position: absolute; top: 10px; right: 8px; font-size: 14px; line-height: 1; cursor: pointer; padding: 3px;
         &:hover {color: var(--coral);}
       }
     }
@@ -539,7 +539,7 @@ const fmtTime = (sec) => {
 const fmtDateShort = (unixSec) => {
   const d = new Date(unixSec*1000);
   const days = ['일','월','화','수','목','금','토'];
-  return String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' ('+days[d.getDay()]+')';
+  return String(d.getFullYear()%100).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0')+' ('+days[d.getDay()]+')';
 };
 const fmtDateFull = (unixSec) => {
   const d = new Date(unixSec*1000);

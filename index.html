@@ -268,7 +268,10 @@
         <section class="contents-head head-title">
           <button id="close-session">✕</button>
           <ul>
-            <li class="tit"><h3><span class="icon" style="background:#e6e9ff;">📅</span> <span id="session-title"></span></h3></li>
+            <li class="tit">
+              <h3><span class="icon" style="background:#e6e9ff;">📅</span> <span id="session-title"></span></h3>
+              <p class="session-gps" id="session-gps" style="display:none;"></p>
+            </li>
             <li><span class="icon" style="background:#dcf6f2;">📉</span>최대수심 <strong id="sess-max-depth">–</strong></li>
             <li><span class="icon" style="background:#ffecd6;">⏳</span>최대 다이빙 시간 <strong id="sess-max-dive-time">–</strong></li>
           </ul>
@@ -331,8 +334,15 @@
 
 <script>
 /* ============================== FIT BINARY PARSER ============================== */
-const FIT_EPOCH_OFFSET = 631065600; // seconds between 1989-12-31T00:00:00Z and unix epoch
+const FIT_EPOCH_OFFSET = 631065600; // 1989-12-31T00:00:00Z 와 유닉스 epoch 사이의 초 차이
 
+// Garmin FIT 바이너리 포맷을 읽는 최소 구현 (Amazfit/Zepp 워치도 이 포맷을 씀).
+// .FIT 파일 구조: 헤더 → "definition"(정의) / "data"(데이터) 레코드가 번갈아
+// 이어지는 스트림 → CRC(여기선 검증 안 함). definition 레코드는 그 뒤에 오는
+// data 레코드들의 바이트 레이아웃을 "local message type"(0-15, 압축 헤더
+// 형태에서는 0-3) 별로 정의하므로, data 레코드를 해석하기 전에 그 레이아웃을
+// `localDefs`에 기억해둬야 한다. 우리가 필요한 건 global message type 20
+// ("record" = GPS/센서 샘플 1개)뿐이며, 이건 extractRecords()에서 걸러낸다.
 class FitParser {
   constructor(arrayBuffer){
     this.view = new DataView(arrayBuffer);
@@ -344,13 +354,16 @@ class FitParser {
     const headerSize = view.getUint8(0);
     const magic = String.fromCharCode(view.getUint8(8),view.getUint8(9),view.getUint8(10),view.getUint8(11));
     if (magic !== '.FIT') throw new Error('올바른 FIT 파일이 아닙니다');
-    const dataSize = view.getUint32(4, true);
-    let offset = headerSize;
+    const dataSize = view.getUint32(4, true); // 레코드 스트림의 바이트 길이 (헤더/CRC 제외)
+    let offset = headerSize; // 레코드는 헤더 바로 뒤부터 시작
     const dataEnd = Math.min(headerSize + dataSize, view.byteLength);
-    const localDefs = {};
-    let lastTimestamp = null;
+    const localDefs = {}; // localType -> {globalNum, fields, little, devFields}
+    let lastTimestamp = null; // 압축 헤더 타임스탬프를 복원할 때 필요
 
     while (offset < dataEnd){
+      // 레코드 헤더 바이트: 6번 비트 = definition/data 구분, 7번 비트 = 압축
+      // 타임스탬프 형태 여부. 압축 형태에서는 5-6번 비트가 local type, 0-4번
+      // 비트가 마지막 전체 타임스탬프로부터의 5비트 오프셋을 담는다.
       const recordHeader = view.getUint8(offset); offset += 1;
       const isDefinition = (recordHeader & 0x40) !== 0;
       const isCompressed = (recordHeader & 0x80) !== 0;
@@ -363,9 +376,11 @@ class FitParser {
       }
 
       if (isDefinition){
-        offset += 1; // reserved
+        // definition 레코드: 필드 개수 + 필드별(필드번호, 바이트 크기, 타입)
+        // 정보로 구성되며, 이 local type의 data 레코드를 어떻게 해석할지 정의한다.
+        offset += 1; // 예약 영역
         const arch = view.getUint8(offset); offset += 1;
-        const little = arch === 0;
+        const little = arch === 0; // 0 = little-endian, 1 = big-endian
         const globalNum = view.getUint16(offset, little); offset += 2;
         const numFields = view.getUint8(offset); offset += 1;
         const fields = [];
@@ -375,30 +390,37 @@ class FitParser {
           const baseType = view.getUint8(offset); offset+=1;
           fields.push({fieldNum,size,baseType});
         }
+        // 일부 기기가 추가하는 커스텀 필드(developer field). 값 자체는 필요
+        // 없고, 이후 data 레코드를 해석할 때 이 부분을 건너뛰기 위해 바이트
+        // 크기만 기억해둔다.
         const devFlag = (recordHeader & 0x20) !== 0;
         const devFields = [];
         if (devFlag){
           const numDev = view.getUint8(offset); offset += 1;
           for (let i=0;i<numDev;i++){
-            offset += 1; // field num
+            offset += 1; // 필드 번호
             const size = view.getUint8(offset); offset += 1;
-            offset += 1; // dev index
+            offset += 1; // developer 인덱스
             devFields.push({size});
           }
         }
         localDefs[localType] = {globalNum, fields, little, devFields};
       } else {
+        // data 레코드: 매칭되는 definition의 레이아웃대로 필드를 해석한다.
         const def = localDefs[localType];
-        if (!def){ break; }
+        if (!def){ break; } // definition을 본 적 없는 타입의 data 레코드 — 중단
         const fieldValues = {};
         for (const f of def.fields){
-          if (offset + f.size > dataEnd + 4){ offset = dataEnd; break; }
+          if (offset + f.size > dataEnd + 4){ offset = dataEnd; break; } // 파일이 잘린 경우 보호
           const val = this._readField(view, offset, f.size, f.baseType, def.little);
           offset += f.size;
           fieldValues[f.fieldNum] = val;
         }
-        for (const df of def.devFields){ offset += df.size; }
+        for (const df of def.devFields){ offset += df.size; } // developer 필드는 값 안 쓰고 건너뛰기만
 
+        // FIT에서 필드 253번은 항상 "timestamp"다. 압축 헤더 레코드는 이 필드를
+        // 생략하고 대신 마지막 전체 타임스탬프로부터의 5비트 오프셋만 담으므로,
+        // 여기서 절대 시각으로 복원한다(오프셋이 하위 5비트를 넘어가면 +32초 롤오버).
         if (isCompressed && lastTimestamp != null){
           let ts = (lastTimestamp & ~0x1F) | compressedOffsetVal;
           if (compressedOffsetVal < (lastTimestamp & 0x1F)) ts += 0x20;
@@ -409,10 +431,14 @@ class FitParser {
         }
         this.messages.push({globalNum: def.globalNum, fields: fieldValues});
       }
-      if (offset <= 0 || offset > dataEnd + 16) break; // safety
+      if (offset <= 0 || offset > dataEnd + 16) break; // 안전장치: 손상된 스트림이면 무한루프 대신 중단
     }
     return this.messages;
   }
+  // FIT 필드 타입 코드에 맞춰 원시 바이트를 값으로 변환한다. 일부 필드는
+  // 배열일 수 있는데(예: 여러 개의 수심 하위값을 보내는 기기), `size`가
+  // 타입 크기의 배수이면서 요소가 2개 이상이면 배열 그대로 반환하고,
+  // 호출부(extractRecords)에서 [0]번째 요소만 사용한다.
   _readField(view, offset, size, baseType, little){
     const readArr = (unit, fn) => {
       const n = Math.max(1, Math.floor(size/unit));
@@ -422,7 +448,7 @@ class FitParser {
       return arr;
     };
     try{
-      switch(baseType){
+      switch(baseType){ // FIT 기본 타입 코드 (FIT SDK Profile.xlsx의 "Types" 시트 참고)
         case 0x00: case 0x02: case 0x0A: return readArr(1,(o)=>view.getUint8(o));
         case 0x01: return readArr(1,(o)=>view.getInt8(o));
         case 0x0D: return view.getUint8(offset);
@@ -443,20 +469,25 @@ class FitParser {
   }
 }
 
-/* ============================== DIVE EXTRACTION ============================== */
+/* ============================== 다이빙 데이터 추출 ============================== */
+// FIT은 위경도를 도(degree)가 아니라 "semicircle" 단위(int32, 원 한 바퀴가
+// 2^32 단위)로 저장하므로, GPS 값을 쓰려면 이 변환을 거쳐야 한다.
 function semicircleToDeg(v){ return v * (180 / 2147483648); }
 
+// FIT 메시지들을 시간순 {t, depth, hr, temp, lat, lon} 샘플 배열로 변환한다
+// (global type 20 = "record" 메시지 하나당 샘플 하나). 랩/세션/기기정보 등
+// 나머지 메시지 타입은 전부 무시한다.
 function extractRecords(messages){
   const out = [];
   for (const m of messages){
-    if (m.globalNum !== 20) continue; // 'record' message
+    if (m.globalNum !== 20) continue; // 'record' 메시지만
     const f = m.fields;
     const rawT = f[253];
     if (rawT === undefined || rawT === 0xFFFFFFFF) continue;
     const t = rawT + FIT_EPOCH_OFFSET;
 
-    // Depth field number varies by manufacturer: 78 is common on Garmin dive
-    // computers, 92 shows up on Amazfit/Zepp watches. Try 78 first, then 92.
+    // 수심 필드 번호는 제조사마다 다르다: 78은 Garmin 다이빙 컴퓨터에서
+    // 흔하고, 92는 Amazfit/Zepp 워치에서 쓰인다. 78을 먼저 시도하고 없으면 92.
     let depthRaw = Array.isArray(f[78]) ? f[78][0] : f[78];
     if (depthRaw === undefined || depthRaw === 0xFFFFFFFF){
       depthRaw = Array.isArray(f[92]) ? f[92][0] : f[92];
@@ -480,13 +511,19 @@ function extractRecords(messages){
   return out;
 }
 
+// 업로드 하나(전체 기록)를 depth > THRESH 구간 기준으로 잘라 개별 다이빙으로
+// 나눈다. 물 위 구간까지 포함된 하나의 .fit 파일이 여러 개의 다이빙 항목이
+// 되는 이유가 이것이다. `records`에 대한 [{startIdx, endIdx}] 인덱스 범위를
+// 반환한다.
 function segmentDives(records){
   const hasDepth = records.some(r=>r.depth != null);
   if (!hasDepth || records.length === 0){
+    // 수심 데이터가 아예 없으면(다이빙이 아닌 활동 등) 전체 기록을
+    // 다이빙 하나로 취급해서 최소한 어딘가에는 보이도록 한다.
     return records.length ? [{startIdx:0, endIdx: records.length-1}] : [];
   }
-  const THRESH = 0.5;
-  const MIN_SURFACE_GAP_S = 3;
+  const THRESH = 0.5; // 미터 — 이 값보다 깊으면 "물속"으로 간주
+  const MIN_SURFACE_GAP_S = 3; // 이 시간(초) 이상 수면 근처에 머물러야 다이빙이 끝난 것으로 판단(수면 노이즈 필터링)
   const raw = [];
   let inDive = false, start = null, lastUnderwater = null;
   for (let i=0;i<records.length;i++){
@@ -501,13 +538,18 @@ function segmentDives(records){
   }
   if (inDive) raw.push({startIdx:start, endIdx:lastUnderwater});
   return raw
-    .filter(d => records[d.endIdx].t - records[d.startIdx].t >= 3)
+    .filter(d => records[d.endIdx].t - records[d.startIdx].t >= 3) // 3초 미만인 짧은 잡음은 제외
     .map(d => ({
+      // 앞뒤로 샘플 2개씩 여유를 둬서, 차트가 THRESH 지점에서 뚝 끊기지
+      // 않고 수면 진입/이탈 구간도 살짝 보이게 한다.
       startIdx: Math.max(0, d.startIdx-2),
       endIdx: Math.min(records.length-1, d.endIdx+2)
     }));
 }
 
+// 다이빙 구간의 각 샘플에 수직 속도(m/s)를 계산해서 붙인다. 연속된 두
+// 샘플의 수심 차이로 계산하며, 음수 = 하강, 양수 = 상승
+// (computeVSpeedStats/CHART_DEFS도 이 부호 규칙을 그대로 따른다).
 function withDerived(slice){
   return slice.map((r,i,arr)=>{
     let vSpeed = null;
@@ -519,14 +561,14 @@ function withDerived(slice){
   });
 }
 
-/* ============================== STORAGE ==============================
-   Uses browser localStorage so records persist on-device between visits
-   when this file is opened directly (e.g. saved/opened on Android, or
-   added to the home screen) — no server, nothing leaves the phone.
-   Note: some browsers restrict localStorage for files opened straight
-   from disk (file://). If history doesn't survive a full app close,
-   try hosting this same file (e.g. a private GitHub Pages URL) instead
-   of opening it as a local file — storage is far more reliable there. */
+/* ============================== 저장소 ==============================
+   브라우저 localStorage를 써서 이 파일을 직접 열었을 때도(예: 안드로이드에
+   저장해서 열거나 홈 화면에 추가한 경우) 방문 사이에 기록이 유지되게
+   한다 — 서버 없이, 데이터가 폰 밖으로 나가지 않는다.
+   참고: 일부 브라우저는 file://로 직접 연 파일에 대해 localStorage를
+   제한한다. 앱을 완전히 종료했을 때 기록이 사라진다면, 로컬 파일로 여는
+   대신 이 파일을 어딘가(예: 비공개 GitHub Pages)에 호스팅해서 열어보길
+   — 그쪽이 저장소가 훨씬 안정적이다. */
 const LS_PREFIX = 'divelog:';
 function lsGet(key){
   try{ const raw = localStorage.getItem(LS_PREFIX+key); return raw ? JSON.parse(raw) : null; }
@@ -538,6 +580,11 @@ function lsSet(key, value){
 }
 function lsDel(key){ try{ localStorage.removeItem(LS_PREFIX+key); } catch(e){} }
 
+// 저장 구조: 'sessions' 키에 업로드 요약 목록 전체가, 'dives:<세션id>'에
+// 해당 업로드의 다이빙 메타 목록이, 'records:<다이빙id>'에 다이빙 하나의
+// 전체 샘플 배열이 들어간다. 하나의 큰 덩어리로 저장하지 않고 이렇게
+// 나눠둔 이유는, 세션 하나를 열 때 다른 모든 세션의 원본 샘플 데이터까지
+// 같이 불러올 필요가 없게 하기 위해서다.
 const loadSessions = () => lsGet('sessions') || [];
 const saveSessions = (list) => lsSet('sessions', list);
 const loadSessionDives = (sid) => lsGet('dives:'+sid) || [];
@@ -546,9 +593,9 @@ const loadDiveRecords = (id) => lsGet('records:'+id);
 const saveDiveRecords = (id, records) => lsSet('records:'+id, records);
 const deleteDiveRecords = (id) => lsDel('records:'+id);
 
-/* ============================== UI STATE ============================== */
+/* ============================== UI 상태 ============================== */
 let sessions = [];        // [{id, fileName, uploadedAt, startTime, endTime, maxDepth, diveCount, gps}]
-let currentSessionDives = null; // dive metas for open session
+let currentSessionDives = null; // 현재 열려 있는 세션의 다이빙 메타 목록
 let selectedSessionId = null;
 
 const $ = (sel) => document.querySelector(sel);
@@ -584,10 +631,13 @@ function toast(msg){
   toast._tm = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-/* ============================== SESSION LIST ============================== */
+/* ============================== 세션(업로드) 목록 ============================== */
+// 둘 다 '' 이면 "전체"(필터 없음)를 뜻한다. filterMonth는 filterYear가
+// 특정 연도로 선택돼 있을 때만 의미가 있다 — syncFilterSelects() 참고.
 let filterYear = '';
 let filterMonth = '';
 
+// 현재 연/월 필터를 `sessions`에 적용해 목록 렌더링용으로 걸러낸다.
 function getFilteredSessions(){
   return sessions.filter(s=>{
     if (!filterYear) return true;
@@ -598,6 +648,12 @@ function getFilteredSessions(){
   });
 }
 
+// 실제로 존재하는 세션들을 기준으로 연/월 <select> 옵션 목록을 다시
+// 만든다(그래서 데이터가 없는 연/월은 애초에 선택할 수 없다). 현재 선택된
+// 연/월에 더 이상 해당하는 세션이 없으면(예: 그 연/월의 마지막 세션을
+// 삭제한 경우) filterYear/filterMonth를 "전체"로 되돌린다.
+// renderSessionList()가 호출될 때마다 맨 앞에서 호출되므로, 드롭다운은
+// 항상 최신 `sessions` 상태를 반영한다.
 function syncFilterSelects(){
   const yearSel = $('#filter-year');
   const monthSel = $('#filter-month');
@@ -607,6 +663,8 @@ function syncFilterSelects(){
   yearSel.value = filterYear;
 
   if (filterYear){
+    // 월 셀렉트는 연도가 선택돼야만 나타나고, 그 해에 실제로 세션이 있는
+    // 월만 목록에 표시한다.
     const months = Array.from(new Set(
       sessions.filter(s=>new Date(s.startTime*1000).getFullYear()===Number(filterYear))
         .map(s=>new Date(s.startTime*1000).getMonth()+1)
@@ -621,6 +679,9 @@ function syncFilterSelects(){
   }
 }
 
+// 현재 필터 상태에 맞춰 상단 업로드 칩 목록을 렌더링한다. 서로 배타적인
+// 세 가지 상태 — "아직 업로드 없음", "필터에 맞는 업로드 없음", 목록 자체 —
+// 의 표시 여부도 여기서 결정한다.
 function renderSessionList(){
   const strip = $('#select-list');
   const empty = $('#select-none');
@@ -667,6 +728,7 @@ function renderSessionList(){
   });
 }
 
+// 업로드 하나를 삭제한다: 다이빙 레코드 → 다이빙 메타 목록 → 세션 자체 순.
 function deleteSession(id){
   if (!confirm('이 업로드 기록을 삭제할까요? 되돌릴 수 없어요.')) return;
   const dives = loadSessionDives(id);
@@ -683,6 +745,9 @@ function deleteSession(id){
   toast('업로드 기록을 삭제했어요');
 }
 
+// 세션 상세 패널을 연다: 요약 헤더를 채우고, 모든 다이빙의 레코드를
+// 불러와서 세션 전체 평균 심박수를 계산하고, 다이빙 테이블을 채운다
+// (각 행은 클릭할 때 자기 차트를 지연 로드한다 — toggleDiveChartRow 참고).
 function openSession(id){
   const s = sessions.find(x=>x.id===id);
   if (!s) return;
@@ -690,6 +755,14 @@ function openSession(id){
   selectedSessionId = id;
   $('#contents').style.display = '';
   $('#session-title').textContent = fmtDateFull(s.startTime);
+  const gpsEl = $('#session-gps');
+  if (s.gps){
+    const lat = s.gps.lat.toFixed(4), lon = s.gps.lon.toFixed(4);
+    gpsEl.innerHTML = `📍 <a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" rel="noopener">${lat}, ${lon}</a>`;
+    gpsEl.style.display = '';
+  } else {
+    gpsEl.style.display = 'none';
+  }
   $('#sess-time').textContent = fmtClock(s.startTime) + ' – ' + fmtClock(s.endTime);
   $('#sess-duration').textContent = fmtTime(s.endTime - s.startTime);
   $('#sess-dive-count').textContent = s.diveCount + '회';
@@ -724,11 +797,22 @@ function openSession(id){
   $('#contents').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-/* ============================== CHART RENDERING ============================== */
+/* ============================== 차트 렌더링 ============================== */
+// 모든 차트는 SVG 좌표계를 하나로 고정해서 쓰고(viewBox 0 0 CHART_W
+// CHART_H, svgChart 참고), 실제 표시 너비에는 CSS로만 맞춘다 — 덕분에
+// buildChartGeometry()와 드래그 처리 코드는 화면 해상도와 무관하게 하나의
+// 단위 체계로만 계산하면 된다.
 const CHART_W = 600, CHART_H = 140;
 const DOT_R = 3.2;
-const PAD = {l:10, r:64, t:10, b:16};
+const PAD = {l:10, r:64, t:10, b:16}; // 오른쪽 여백은 최소/최대값 라벨 표시 공간
 
+// 차트의 `mode`에 따라 y축 최소/최대값을 정한다:
+// - 'zero': 0을 기준으로 대칭(수직 속도 — +/- 양쪽 스케일을 같게 해서
+//   0선이 항상 가운데 오도록)
+// - 'depth': 항상 0(수면)부터 시작하고 최대 수심 위로 약간 여유를 둠
+//   (수심은 음수가 될 수 없으므로)
+// - 'normal'(심박수/수온): 최소~최대에 약 18% 여백을 줘서 선이 위/아래
+//   끝에 딱 붙지 않게 함
 function computeScale(values, mode){
   const nums = values.filter(v=>v!=null);
   if (nums.length===0) return {min:0,max:1};
@@ -744,6 +828,9 @@ function computeScale(values, mode){
   return {min:min-pad, max:max+pad};
 }
 
+// 값 배열을 CHART_W x CHART_H 안의 SVG 좌표들 + path `d` 문자열로 변환한다.
+// null 값이 있으면 그 지점의 데이터 공백을 이어 그리지(보간) 않고 선을
+// 끊어서 별도 구간으로 나눈다(L 대신 M).
 function buildChartGeometry(values, mode){
   const scale = computeScale(values, mode);
   const n = values.length;
@@ -766,6 +853,10 @@ function buildChartGeometry(values, mode){
   return {pts, d, scale, mapY, innerW, innerH};
 }
 
+// 차트 하나의 정적인 SVG 뼈대(그리드선, 그라디언트 채우기, 크로스헤어/점,
+// 최소/최대 라벨)를 그리며, 실제 내용은 전부 비워/숨겨둔 상태로 반환한다.
+// 실제 선 경로와 라벨 텍스트는 이 마크업이 삽입된 직후 renderInlineCharts()가
+// 채우고, 이후 스크럽할 때마다 updateInlineCrosshair()가 갱신한다.
 function svgChart(id, color, mode){
   const zeroLineY = mode==='zero' ? PAD.t + (CHART_H-PAD.t-PAD.b)/2 : null;
   return `
@@ -798,8 +889,9 @@ const CHART_DEFS = [
   {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <strong>수온</strong> <span>(℃)</span>'},
 ];
 
-// Shared across every open dive's chart-block-wrap, so switching the view
-// mode once (via the fixed bottom bar) re-flows all of them at once.
+// 현재 열려 있는 모든 다이빙의 chart-block-wrap이 공유하는 값이라, 하단
+// 고정 바에서 뷰 모드를 한 번 바꾸면 열려 있는 차트 전부가 한꺼번에 다시
+// 배치된다.
 let chartViewMode = lsGet('chartViewMode') === 'box' ? 'box' : 'list';
 function applyChartViewMode(){
   document.querySelectorAll('.chart-block-wrap').forEach(el=>{
@@ -807,9 +899,9 @@ function applyChartViewMode(){
   });
   $('#chart-view-list').style.display = chartViewMode === 'box' ? '' : 'none';
   $('#chart-view-box').style.display = chartViewMode === 'list' ? '' : 'none';
-  // Re-flowing the wrap changes each chart's rendered width, so any
-  // crosshair dot left visible from before the toggle has a stale rx
-  // (computed against the old width) and renders as a squashed ellipse.
+  // 레이아웃을 다시 배치하면 차트마다 렌더링 너비가 바뀌므로, 토글 이전에
+  // 표시돼 있던 크로스헤어 점은 예전 너비 기준으로 계산된 rx 값이 남아있어
+  // 찌그러진 타원으로 보인다. 그래서 새 너비 기준으로 다시 계산해준다.
   document.querySelectorAll('svg.chart').forEach(svgEl=>{
     const dot = svgEl.querySelector('ellipse[id$="-dot"]');
     if (!dot || dot.style.display === 'none') return;
@@ -818,15 +910,15 @@ function applyChartViewMode(){
   });
 }
 
-/* ============================== INLINE ROW CHART (toggle) ============================== */
-// Tracks every currently-open chart <td> so its window-level drag listeners
-// and IntersectionObserver can be torn down even when the row is removed
-// some other way (closing the session, switching sessions, reset-all)
-// instead of only via the collapse click on the same row.
+/* ============================== 인라인 행 차트(펼치기/접기) ============================== */
+// 현재 펼쳐져 있는 모든 차트 <td>를 추적해서, 같은 행을 클릭해 접는 경우
+// 뿐 아니라 다른 방식으로 행이 사라질 때도(세션 닫기, 세션 전환, 전체
+// 초기화) window 레벨 드래그 리스너와 IntersectionObserver를 정리할 수
+// 있게 한다.
 let openChartContainers = [];
-// fixed-info-bar is only meaningful while a dive chart is open (it mirrors
-// the crosshair being scrubbed on one), so its visibility just tracks
-// whether any chart row is currently expanded.
+// fixed-info-bar(하단 고정 정보바)는 다이빙 차트가 펼쳐져 있을 때만
+// 의미가 있으므로(스크럽 중인 차트 값을 그대로 보여주는 용도), 표시
+// 여부는 그냥 펼쳐진 차트 행이 하나라도 있는지로 결정한다.
 function syncFixedInfoBar(){
   const show = openChartContainers.length > 0;
   $('#fixed-info-bar').style.display = show ? '' : 'none';
@@ -867,6 +959,8 @@ function toggleDiveChartRow(tr, d){
   renderInlineCharts(td, records);
 }
 
+// 차트 라벨(h4) 아래에 표시할 다이빙별 요약 수치(최대수심, 평균하강/상승
+// 속도, 평균/최대 심박수, 최저/최고 수온 등)를 차트 종류별로 계산한다.
 function chartLabelSubStats(def, records, vs){
   const values = records.map(r=>r[def.key]).filter(v=>v!=null);
   if (!values.length) return [];
@@ -884,6 +978,9 @@ function chartLabelSubStats(def, records, vs){
   }
 }
 
+// 다이빙의 vSpeed 샘플을 하강(음수)/상승(양수)으로 나눠서 각각의
+// 평균·극값을 계산한다 — 상단 info-bar와 vSpeed 차트 서브 통계
+// (chartLabelSubStats) 둘 다 이 값을 쓴다.
 function computeVSpeedStats(records){
   const descents = records.map(r=>r.vSpeed).filter(v=>v!=null && v<0);
   const ascents = records.map(r=>r.vSpeed).filter(v=>v!=null && v>0);
@@ -896,6 +993,10 @@ function computeVSpeedStats(records){
   };
 }
 
+// 다이빙 하나를 펼쳤을 때의 전체 내용을 만든다: info-bar 2개 + CHART_DEFS
+// 항목(수심/수직속도/심박수/수온)마다 chart-block 하나씩(각각 서브 통계
+// 줄 포함). `uid`로 이 다이빙의 엘리먼트 id를 구분해서, 여러 다이빙 행을
+// 동시에 펼쳐도 id가 겹치지 않게 한다.
 function renderInlineCharts(container, records){
   const uid = 'inline-' + Math.random().toString(36).slice(2,8);
   const totalSec = records.length ? records[records.length-1].t - records[0].t : 0;
@@ -972,6 +1073,9 @@ function renderInlineCharts(container, records){
   }
 }
 
+// 모든 차트의 크로스헤어/점을 샘플 인덱스 `idx` 위치로 옮기고 info-bar
+// 텍스트를 갱신한다(인라인 바와, 보이는 상태라면 하단 고정 바 둘 다).
+// idx === null이면 전부 "스크럽 중 아님"(–) 상태로 되돌린다.
 function updateInlineCrosshair(container, idx, records, geoms, chartIds){
   const fixedBar = document.getElementById('fixed-info-bar');
   const setInfo = (key, val) => {
@@ -1024,12 +1128,18 @@ function updateInlineCrosshair(container, idx, records, geoms, chartIds){
   });
 }
 
+// 이 다이빙 행에 있는 모든 차트에 크로스헤어 스크럽 기능을 연결한다.
+// 마우스: mousedown 즉시 드래그 시작, 방향 판단이 필요 없음.
+// 터치: 처음 움직였을 때 가로 스크럽인지(axisLock='x', 크로스헤어를
+// 움직이고 preventDefault로 페이지 스크롤을 막음) 세로 스크롤인지
+// (axisLock='y', 스크롤에 양보) 판단한다 — onMove 참고. 이 덕분에
+// 손가락 하나로 차트를 스크럽할 때 페이지 스크롤과 충돌하지 않는다.
 function attachInlineDrag(container, records, geoms, chartIds){
   const svgs = Object.values(chartIds).map(id=>document.getElementById(id)).filter(Boolean);
   if (svgs.length === 0) return;
   let dragging = false;
   let startX = 0, startY = 0, axisLock = null; // axisLock: null(미정) | 'x'(차트 드래그) | 'y'(스크롤 양보)
-  let activeSvg = svgs[0]; // the specific chart being touched — matters in box-view, where charts sit in different columns
+  let activeSvg = svgs[0]; // 실제로 터치 중인 차트 — 박스뷰에서는 차트가 서로 다른 열에 있어서 중요함
   const n = records.length;
   const SLOP = 6; // 방향 판단 전 허용 오차(px)
   const RELEASE_DY = 64; // 이 이상 세로로 벗어나면 가로 드래그로 확정됐어도 스크롤에 양보
@@ -1100,11 +1210,16 @@ function attachInlineDrag(container, records, geoms, chartIds){
   };
 }
 
-/* ============================== FILE HANDLING ============================== */
+/* ============================== 파일 업로드 처리 ============================== */
+// 선택되거나 드롭된 .fit 파일들을 각각 읽고 파싱한다(FileReader가
+// 비동기라 `pending` 카운트다운으로 여러 파일을 병렬 처리). 파일 하나당
+// 세션 하나 + 다이빙 메타 목록 + 다이빙별 레코드 배열을 localStorage에
+// 저장한다. 모든 파일이 처리(성공이든 실패든) 끝나면 finishUpload()가
+// 한 번 호출된다 — 실제로 뭐가 추가됐는지는 `newSessions` 인자를 보면 된다.
 function handleFiles(fileList){
   const files = Array.from(fileList).filter(f=>f.name.toLowerCase().endsWith('.fit'));
   if (files.length === 0){ toast('.fit 파일만 업로드할 수 있어요'); return; }
-  const newSessions = [];
+  const newSessions = []; // 이번 업로드에서 실제로 추가된 세션들
   let pending = files.length;
 
   files.forEach(file=>{
@@ -1119,8 +1234,8 @@ function handleFiles(fileList){
         const dives = segmentDives(records);
         if (dives.length === 0){ toast(file.name + ': 다이빙 구간을 찾을 수 없어요'); return; }
 
-        // Content fingerprint (not just filename) so the same recording
-        // uploaded twice — even under a different filename — is caught.
+        // 파일명이 아니라 내용 기반 지문(fingerprint)이라, 같은 기록을
+        // 다른 파일명으로 다시 올려도 중복으로 잡아낼 수 있다.
         const fingerprint = records[0].t + '_' + records[records.length-1].t + '_' + records.length;
         if (sessions.some(s => s.fingerprint === fingerprint)){
           toast(file.name + ': 이미 업로드된 파일이에요');
@@ -1166,8 +1281,8 @@ function handleFiles(fileList){
           fingerprint
         };
         if (storageFailed || !saveSessionDives(sessionId, diveMetas)){
-          // Roll back whatever dive records did get written so we don't
-          // leave orphaned data with no session pointing at it.
+          // 이미 저장된 다이빙 레코드가 있다면 롤백해서, 어떤 세션도
+          // 가리키지 않는 고아 데이터가 남지 않게 한다.
           diveMetas.forEach(dm=>deleteDiveRecords(dm.id));
           toast(file.name + ': 저장 공간이 부족해 추가하지 못했어요');
           return;
@@ -1191,6 +1306,9 @@ function handleFiles(fileList){
   });
 }
 
+// handleFiles() 배치의 파일들이 모두 처리된 뒤 한 번 실행된다.
+// 전체 세션 중 최신이 아니라 *이번 배치에서* 최신 다이빙을 연다 — 예전
+// 백업 파일을 업로드했는데 오늘 다이빙 화면으로 튀는 일이 없도록.
 function finishUpload(newSessions){
   if (newSessions.length > 0){
     saveSessions(sessions);
@@ -1204,7 +1322,11 @@ function finishUpload(newSessions){
   }
 }
 
-/* ============================== EVENTS / INIT ============================== */
+/* ============================== 이벤트 바인딩 / 초기화 ============================== */
+// 세션 헤더 바로 위에 있는 1px짜리 감지용 엘리먼트. 이게 화면 밖으로
+// 스크롤되면 헤더가 "fixed"(고정처럼 보이는) CSS 상태로 전환된다.
+// scroll 이벤트 대신 IntersectionObserver를 쓰는 이유는 스크롤할 때마다
+// 매 프레임 계산하지 않기 위해서다.
 {
   const sentinel = $('#contents-head-sentinel');
   const contentsHead = document.querySelector('.contents-head');
@@ -1260,10 +1382,14 @@ $('#reset-all').addEventListener('click', ()=>{
   toast('모두 초기화했어요');
 });
 
+// 시작할 때 한 번 실행되는 정리 작업: 지문(fingerprint)이 같은 세션들을
+// (지문이 없던 예전 데이터는 startTime+endTime+diveCount가 같은 세션들을)
+// 가장 먼저 올린 것 하나만 남기고 나머지는 지운다 — 업로드 시점 지문
+// 검사가 생기기 전에 들어온 중복 데이터를 정리하기 위함.
 function dedupeExistingSessions(){
-  const seen = new Map(); // key -> session to keep
+  const seen = new Map(); // key -> 남길 세션
   const toRemove = [];
-  // Sort so the earliest upload of a duplicate set is the one kept.
+  // 중복 그룹에서 가장 먼저 업로드된 것이 남도록 정렬
   const sorted = sessions.slice().sort((a,b)=>a.uploadedAt-b.uploadedAt);
   sorted.forEach(s=>{
     const key = s.fingerprint || (s.startTime+'_'+s.endTime+'_'+s.diveCount);
@@ -1284,6 +1410,8 @@ function dedupeExistingSessions(){
   return toRemove.length;
 }
 
+// 앱 진입점: localStorage에 있던 데이터를 불러오고, 남아있던 중복을
+// 조용히 정리한 뒤 첫 렌더링을 한다.
 (function init(){
   sessions = loadSessions();
   const removed = dedupeExistingSessions();

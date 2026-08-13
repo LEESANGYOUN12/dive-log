@@ -557,14 +557,14 @@ function svgChart(id, color, mode){
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    ${[0.25,0.5,0.75].map(f=>`<line x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" y2="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" stroke="rgba(14,50,60,0.08)" stroke-width="1"/>`).join('')}
-    ${zeroLineY!=null ? `<line x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${zeroLineY}" y2="${zeroLineY}" stroke="rgba(14,50,60,0.22)" stroke-dasharray="3,3"/>` : ''}
+    ${[0.25,0.5,0.75].map(f=>`<line class="chart-grid-line" x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" y2="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" stroke-width="1"/>`).join('')}
+    ${zeroLineY!=null ? `<line class="chart-zero-line" x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${zeroLineY}" y2="${zeroLineY}" stroke-dasharray="3,3"/>` : ''}
     <path id="${id}-area" fill="url(#${id}-fill)" stroke="none" d=""></path>
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
-    <line id="${id}-crosshair" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke="rgba(14,50,60,0.4)" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
+    <line id="${id}-crosshair" class="chart-crosshair-line" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="${DOT_R}" ry="${DOT_R}" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="11" fill="#b3b2c6"></text>
-    <text id="${id}-min" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="11" fill="#b3b2c6"></text>
+    <text id="${id}-max" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="11"></text>
+    <text id="${id}-min" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="11"></text>
   </svg>`;
 }
 

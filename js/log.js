@@ -431,6 +431,11 @@ function deleteSession(id){
   toast('업로드 기록을 삭제했어요');
 }
 
+// 위경도 숫자만 나오는 건 지도 없이는 쓸모가 없어서 일단 꺼둠. 나중에
+// 실제 지도 미리보기 등으로 발전시킬 수 있게 로직은 그대로 남겨두고,
+// 이 플래그만 켜면 다시 노출된다.
+const SHOW_SESSION_GPS = false;
+
 // 세션 상세 패널을 연다: 요약 헤더를 채우고, 모든 다이빙의 레코드를
 // 불러와서 세션 전체 평균 심박수를 계산하고, 다이빙 테이블을 채운다
 // (각 행은 클릭할 때 자기 차트를 지연 로드한다 — toggleDiveChartRow 참고).
@@ -442,7 +447,7 @@ function openSession(id){
   $('#contents').style.display = '';
   $('#session-title').textContent = fmtDateFull(s.startTime);
   const gpsEl = $('#session-gps');
-  if (s.gps){
+  if (SHOW_SESSION_GPS && s.gps){
     const lat = s.gps.lat.toFixed(4), lon = s.gps.lon.toFixed(4);
     gpsEl.innerHTML = `📍 <a href="https://maps.google.com/?q=${lat},${lon}" target="_blank" rel="noopener">${lat}, ${lon}</a>`;
     gpsEl.style.display = '';

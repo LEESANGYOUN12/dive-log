@@ -57,9 +57,14 @@
     header {padding: 20px var(--pd);  border-bottom: 1px solid #ccc;
       .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
       h1 svg {width: 120px; height: auto;}
+      .header-actions {display: flex; align-items: center; gap: 4px;}
       label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
       label input {display: none;}
       label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
+      .install-btn {display: none; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); background: var(--purple); border: 1.5px solid var(--purple); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+        &.show {display: flex;}
+        &:hover {background: var(--purple-light);}
+      }
     }
     main {flex: 1; padding: 0 var(--pd) 60px var(--pd);
       .inner {max-width: 900px; margin: 0 auto;}
@@ -277,7 +282,10 @@
           </g>
         </svg>
       </h1>
-      <label id="dropzone"> <span>＋ FIT ADD</span> <input type="file" id="file-input" accept=".fit" multiple> </label>
+      <div class="header-actions">
+        <button id="install-btn" class="install-btn"><span>⬇</span> 앱 설치</button>
+        <label id="dropzone"> <span>＋ FIT ADD</span> <input type="file" id="file-input" accept=".fit" multiple> </label>
+      </div>
     </div>
   </header>
 
@@ -375,15 +383,25 @@
 
 <script>
 /* ============================== 시작 스플래시 ============================== */
-// 페이지가 뜨자마자 보이는 스플래시(#splash)를 최소 이 시간(ms) 동안은
-// 유지했다가 서서히 사라지게 한다. 스크립트 맨 위에서 바로 타이머를 걸어야
-// 실제 화면에 그려진 시점과 최대한 가깝게 시작된다.
-setTimeout(() => {
+// 홈 화면에 설치해서 standalone(주소창 없는) 모드로 실행했을 때만 스플래시를
+// 보여준다. 일반 브라우저 탭으로 그냥 열었을 땐 바로 없애서, 매번 방문할
+// 때마다 불필요하게 로고를 보게 하지 않는다.
+// iOS는 display-mode 미디어쿼리 대신 navigator.standalone 플래그로 판단한다.
+const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+if (isStandaloneApp){
+  // 페이지가 뜨자마자 보이는 스플래시(#splash)를 최소 이 시간(ms) 동안은
+  // 유지했다가 서서히 사라지게 한다. 스크립트 맨 위에서 바로 타이머를 걸어야
+  // 실제 화면에 그려진 시점과 최대한 가깝게 시작된다.
+  setTimeout(() => {
+    const splash = document.getElementById('splash');
+    if (!splash) return;
+    splash.classList.add('hide');
+    setTimeout(() => splash.remove(), 400); // CSS transition(.4s)이 끝난 뒤 완전히 제거
+  }, 1500);
+} else {
   const splash = document.getElementById('splash');
-  if (!splash) return;
-  splash.classList.add('hide');
-  setTimeout(() => splash.remove(), 400); // CSS transition(.4s)이 끝난 뒤 완전히 제거
-}, 1500);
+  if (splash) splash.remove();
+}
 
 /* ============================== FIT BINARY PARSER ============================== */
 const FIT_EPOCH_OFFSET = 631065600; // 1989-12-31T00:00:00Z 와 유닉스 epoch 사이의 초 차이
@@ -1388,6 +1406,28 @@ function finishUpload(newSessions){
     }, {threshold: 0}).observe(sentinel);
   }
 }
+// PWA 설치 버튼: 브라우저가 "설치 가능" 상태라고 판단해 beforeinstallprompt를
+// 쏴줄 때만 버튼을 보여준다. iOS Safari나 이미 설치된 경우, 최근에 설치를
+// 취소해서 브라우저가 재안내를 쿨다운 중인 경우엔 이 이벤트 자체가 안 오므로
+// 버튼도 자연스럽게 안 뜬다(별도 기기/상태 분기 코드 불필요).
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  $('#install-btn').classList.add('show');
+});
+$('#install-btn').addEventListener('click', async ()=>{
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  $('#install-btn').classList.remove('show');
+});
+window.addEventListener('appinstalled', ()=>{
+  deferredInstallPrompt = null;
+  $('#install-btn').classList.remove('show');
+});
+
 applyChartViewMode();
 $('#chart-view-list').addEventListener('click', ()=>{ chartViewMode = 'list'; lsSet('chartViewMode', chartViewMode); applyChartViewMode(); });
 $('#chart-view-box').addEventListener('click', ()=>{ chartViewMode = 'box'; lsSet('chartViewMode', chartViewMode); applyChartViewMode(); });

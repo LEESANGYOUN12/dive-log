@@ -779,8 +779,13 @@ function renderInlineCharts(container, records){
       wrap.querySelector(`#${chartId}-area`).setAttribute('d', geo.d + `L ${geo.pts[geo.pts.length-1].x.toFixed(2)} ${zeroY.toFixed(2)} L ${geo.pts[0].x.toFixed(2)} ${zeroY.toFixed(2)} Z`);
     }
     const minmaxHtml = (v)=> v==null ? '–' : `${def.fmtValue(v)}<tspan class="chart-minmax-unit">${def.unit}</tspan>`;
-    wrap.querySelector(`#${chartId}-max`).innerHTML = minmaxHtml(geo.scale.max);
-    wrap.querySelector(`#${chartId}-min`).innerHTML = minmaxHtml(geo.scale.min);
+    // -max/-min은 "차트 위쪽/아래쪽에 놓인 라벨"이라는 뜻이다. depth 모드만
+    // mapY()가 뒤집혀 있어(수심 0이 위, 최대수심이 아래) 위쪽엔 최소값(0),
+    // 아래쪽엔 최대수심이 와야 한다 — 다른 모드는 반대로 위=최대, 아래=최소.
+    const topVal = def.mode === 'depth' ? geo.scale.min : geo.scale.max;
+    const bottomVal = def.mode === 'depth' ? geo.scale.max : geo.scale.min;
+    wrap.querySelector(`#${chartId}-max`).innerHTML = minmaxHtml(topVal);
+    wrap.querySelector(`#${chartId}-min`).innerHTML = minmaxHtml(bottomVal);
     fixMinmaxLabelScale(wrap.querySelector('svg.chart'));
   });
 

@@ -32,34 +32,33 @@
   --radius: 8px;
   --pd: 60px;
 }
-/* 다크 모드: 토글 없이 시스템 설정을 그대로 따라간다 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg:#16141f;
-    --ac-01:#a68dfa;
-    --ac-02:#6BBDB9;
-    --line:rgba(255,255,255,0.08);
-    --text:#e7e5ef;
-    --muted:#9d97b8;
-    --muted-2:#726c8c;
-    --purple:#a58bff;
-    --purple-light:#2a2340;
-    --coral:#ff7a90;
-    --depth:#a58bff;
-    --ascent:#ffb84d;
-    --temp:#ff9569;
-    --hr:#ff7a90;
-    --surface:#2a263d;
-    --surface-2:#262233;
-    --border-1:#3a3650;
-    --border-2:#34304a;
-    --text-secondary:#b8b3cc;
-    --text-tertiary:#948fb0;
-    --chart-grid: rgba(255,255,255,0.1);
-    --chart-zero-line: rgba(255,255,255,0.25);
-    --chart-crosshair: rgba(255,255,255,0.45);
-    --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%23a68dfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  }
+/* 다크 모드: 시스템 설정을 따라가지 않고, 사용자가 버튼으로 직접 켜고 끈다.
+   JS가 <html data-theme="dark">를 붙였을 때만 아래 값으로 덮어쓴다. */
+:root[data-theme="dark"] {
+  --bg:#16141f;
+  --ac-01:#a68dfa;
+  --ac-02:#6BBDB9;
+  --line:rgba(255,255,255,0.08);
+  --text:#e7e5ef;
+  --muted:#9d97b8;
+  --muted-2:#726c8c;
+  --purple:#a58bff;
+  --purple-light:#2a2340;
+  --coral:#ff7a90;
+  --depth:#a58bff;
+  --ascent:#ffb84d;
+  --temp:#ff9569;
+  --hr:#ff7a90;
+  --surface:#2a263d;
+  --surface-2:#262233;
+  --border-1:#3a3650;
+  --border-2:#34304a;
+  --text-secondary:#b8b3cc;
+  --text-tertiary:#948fb0;
+  --chart-grid: rgba(255,255,255,0.1);
+  --chart-zero-line: rgba(255,255,255,0.25);
+  --chart-crosshair: rgba(255,255,255,0.45);
+  --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%23a68dfa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 @media (max-width: 1025px) {
   :root {

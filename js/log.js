@@ -266,6 +266,17 @@ function lsSet(key, value){
 }
 function lsDel(key){ try{ localStorage.removeItem(LS_PREFIX+key); } catch(e){} }
 
+// 다크모드: 시스템 설정을 따라가지 않고 사용자가 버튼으로 직접 켠다.
+// 선택한 값은 localStorage에 저장해 다음 방문에도 유지한다.
+let theme = lsGet('theme') === 'dark' ? 'dark' : 'light';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = $('#theme-toggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const meta = $('#theme-color-meta');
+  if (meta) meta.setAttribute('content', theme === 'dark' ? '#16141f' : '#f2f2f8');
+}
+
 // 저장 구조: 'sessions' 키에 업로드 요약 목록 전체가, 'dives:<세션id>'에
 // 해당 업로드의 다이빙 메타 목록이, 'records:<다이빙id>'에 다이빙 하나의
 // 전체 샘플 배열이 들어간다. 하나의 큰 덩어리로 저장하지 않고 이렇게
@@ -1047,6 +1058,13 @@ $('#install-btn').addEventListener('click', async ()=>{
 window.addEventListener('appinstalled', ()=>{
   deferredInstallPrompt = null;
   $('#install-btn').classList.remove('show');
+});
+
+applyTheme();
+$('#theme-toggle').addEventListener('click', ()=>{
+  theme = theme === 'dark' ? 'light' : 'dark';
+  lsSet('theme', theme);
+  applyTheme();
 });
 
 applyChartViewMode();

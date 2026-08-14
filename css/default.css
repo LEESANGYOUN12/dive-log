@@ -31,6 +31,14 @@
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%230369A1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --radius: 8px;
   --pd: 60px;
+  /* 세션 상세 아이콘 배지 배경 */
+  --icon-calendar: #DCEEFF;
+  --icon-depth: #d3f3ef;
+  --icon-duration: #ffecd6;
+  --icon-total-time: #d9f0ff;
+  --icon-count: #dceeff;
+  --icon-time: #e0f7e0;
+  --icon-hr: #ffe0e6;
 }
 /* 다크 모드: 시스템 설정을 따라가지 않고, 사용자가 버튼으로 직접 켜고 끈다.
    JS가 <html data-theme="dark">를 붙였을 때만 아래 값으로 덮어쓴다. */
@@ -59,6 +67,13 @@
   --chart-zero-line: rgba(255,255,255,0.25);
   --chart-crosshair: rgba(255,255,255,0.45);
   --select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' fill='none' stroke='%237dd3fc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --icon-calendar: #1b3550;
+  --icon-depth: #16342f;
+  --icon-duration: #402c1a;
+  --icon-total-time: #17334a;
+  --icon-count: #17334a;
+  --icon-time: #1c3320;
+  --icon-hr: #3a1d28;
 }
 @media (max-width: 1025px) {
   :root {

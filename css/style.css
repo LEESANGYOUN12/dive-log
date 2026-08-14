@@ -54,7 +54,7 @@
 .session-gps {margin-left: 32px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 4px;}
 .session-gps a {color: var(--ac-01);}
 .contents-head.head-title {border-radius: var(--radius) var(--radius) 0 0; position: sticky; top: 0; z-index: 100;
-  button {position: absolute; top: 12px; right: 12px; z-index: 101;}
+  button {position: absolute; top: 14px; right: 12px; z-index: 101;}
   li.tit + li {border-right: 1px solid var(--border-2);}
 }
 .contents-head.head-stats {border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 16px;
@@ -64,7 +64,9 @@
 .contents-head.fixed ul {position: relative;}
 .contents-head.fixed ul:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: var(--border-2); z-index: 1;}
 .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: var(--surface); z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
-.contents-head.fixed li {border-color: transparent;}
+.contents-head.fixed li {border-color: transparent; padding-left: 0; padding-right: 0;}
+.contents-head.fixed li:nth-child(2) {padding-right: var(--pd);}
+.contents-head.fixed li:nth-child(3) {padding-left: var(--pd);}
 .contents-head.fixed li.tit {position: relative;}
 .contents-head.fixed li.tit:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: var(--border-2); z-index: 1;}
 .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: var(--surface); z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
@@ -110,6 +112,7 @@ svg.chart .chart-grid-line {stroke: var(--chart-grid);}
 svg.chart .chart-zero-line {stroke: var(--chart-zero-line);}
 svg.chart .chart-crosshair-line {stroke: var(--chart-crosshair);}
 svg.chart .chart-minmax-label {fill: var(--muted-2);}
+.chart-block-wrap.box-view .chart-minmax-unit {font-size: 0;}
 .chart-time-axis {display: flex; justify-content: space-between; padding: 0 4% 0 1%; font-size: 10px; color: var(--muted-2); margin-top: -8px;}
 .chart-block-wrap.box-view .chart-time-axis span:nth-child(even) {display: none;}
 .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}

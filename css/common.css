@@ -11,13 +11,12 @@
       &.show {display: flex;}
     }
     .theme-toggle {display: flex; align-items: center; justify-content: center; height: 36px; width: 36px; border-radius: var(--radius); background: var(--surface-2); border: 1.5px solid #f6b93b; font-size: 16px; cursor: pointer;
-      &:hover {border-color: var(--purple);}
     }
   }
-  main {flex: 1; padding: 0 var(--pd) 60px var(--pd);
+  main {flex: 1; padding: 0 var(--pd) 16px var(--pd);
     .inner {max-width: 900px; margin: 0 auto;}
   }
-  footer {padding: 24px var(--pd); border-top: 1px solid var(--border-1);
+  footer {padding: 16px var(--pd); border-top: 1px solid var(--border-1);
     p {color: var(--text-secondary); font-size: 12px; text-align: center;}
     p.copyright {color: var(--text-tertiary); margin-top: 8px;}
   }

@@ -25,7 +25,7 @@
 }
 
 /* 선택 */
-.select-list {display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; /* max-height: 262px; overflow-y: auto; */
+.select-list {display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 8px; /* max-height: 262px; overflow-y: auto; */
   > li {padding: 8px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid var(--surface); background: var(--surface); border-radius: var(--radius);
     &.selected {border-color: var(--ac-02);}
     h3 {font-weight: 600; font-size: 14px; letter-spacing: -0.5px;}
@@ -110,6 +110,7 @@ svg.chart .chart-grid-line {stroke: var(--chart-grid);}
 svg.chart .chart-zero-line {stroke: var(--chart-zero-line);}
 svg.chart .chart-crosshair-line {stroke: var(--chart-crosshair);}
 svg.chart .chart-minmax-label {fill: var(--muted-2);}
+.chart-block-wrap.box-view .chart-minmax-unit {font-size: 0;}
 .chart-time-axis {display: flex; justify-content: space-between; padding: 0 4% 0 1%; font-size: 10px; color: var(--muted-2); margin-top: -8px;}
 .chart-block-wrap.box-view .chart-time-axis span:nth-child(even) {display: none;}
 .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}

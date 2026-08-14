@@ -25,7 +25,7 @@
 }
 
 /* 선택 */
-.select-list {display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; /* max-height: 262px; overflow-y: auto; */
+.select-list {display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; /* max-height: 262px; overflow-y: auto; */
   > li {padding: 8px; cursor: pointer; position: relative; transition: transform .12s, outline-color .12s; border: 2px solid var(--surface); background: var(--surface); border-radius: var(--radius);
     &.selected {border-color: var(--ac-02);}
     h3 {font-weight: 600; font-size: 14px; letter-spacing: -0.5px;}

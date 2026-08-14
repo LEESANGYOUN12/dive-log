@@ -10,7 +10,7 @@
     .install-btn {display: none; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); background: var(--purple); border: 1.5px solid var(--purple); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
       &.show {display: flex;}
     }
-    .theme-toggle {display: flex; align-items: center; justify-content: center; height: 36px; width: 36px; border-radius: var(--radius); background: var(--surface-2); border: 1.5px solid var(--border-1); font-size: 16px; cursor: pointer;
+    .theme-toggle {display: flex; align-items: center; justify-content: center; height: 36px; width: 36px; border-radius: var(--radius); background: var(--surface-2); border: 1.5px solid #f6b93b; font-size: 16px; cursor: pointer;
       &:hover {border-color: var(--purple);}
     }
   }

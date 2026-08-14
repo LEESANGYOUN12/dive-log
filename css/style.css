@@ -95,7 +95,7 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
 .chart-block {border-bottom: 2px dashed var(--border-1); padding: 24px 0 24px 6px; min-width: 0;}
 :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
 :has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 13px;}
-:has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 12px;  gap: 8px; padding: 0 12px;}
+:has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 12px;  gap: 8px; padding: 0 16px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li {flex: 1;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li span {display: block;}
 .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
@@ -103,7 +103,7 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
   .chart-block:nth-child(odd) {border-right: 2px dashed var(--border-1);}
   .chart-block:nth-last-child(-n+2) {border-bottom: none;}
 }
-.chart-label {color: var(--muted); margin-bottom: 8px;}
+.chart-label {color: var(--muted); margin-bottom: 8px; padding-right: 6px;}
 .chart-label h4 {font-size: 18px; }
 .chart-label h4 strong {color: var(--text); font-weight: 700;}
 .chart-label h4 span {font-size: 12px;}

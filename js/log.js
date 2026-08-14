@@ -506,7 +506,7 @@ function openSession(id){
 // 단위 체계로만 계산하면 된다.
 const CHART_W = 600, CHART_H = 140;
 const DOT_R = 3.2;
-const PAD = {l:10, r:64, t:10, b:16}; // 오른쪽 여백은 최소/최대값 라벨 표시 공간
+const PAD = {l:10, r:100, t:10, b:16}; // 오른쪽 여백은 최소/최대값 라벨 표시 공간
 
 // 차트의 `mode`에 따라 y축 최소/최대값을 정한다:
 // - 'zero': 0을 기준으로 대칭(수직 속도 — +/- 양쪽 스케일을 같게 해서
@@ -579,8 +579,8 @@ function svgChart(id, color, mode){
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" class="chart-crosshair-line" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="${DOT_R}" ry="${DOT_R}" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="11"></text>
-    <text id="${id}-min" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="11"></text>
+    <text id="${id}-max" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="9"></text>
+    <text id="${id}-min" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="9"></text>
   </svg>`;
 }
 

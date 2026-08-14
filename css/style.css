@@ -64,7 +64,9 @@
 .contents-head.fixed ul {position: relative;}
 .contents-head.fixed ul:after {content: ""; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: -1px; height: 1px; background: var(--border-2); z-index: 1;}
 .contents-head.fixed:after {content: ''; position: absolute; left: calc(-1 * var(--pd)); right: calc(-1 * var(--pd)); bottom: 0; height: 100%; background: var(--surface); z-index: -1; pointer-events: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.1);}
-.contents-head.fixed li {border-color: transparent; padding-left: 0; padding-right: 0;}
+.contents-head.fixed button {right: 2px;}
+
+  .contents-head.fixed li {border-color: transparent; padding-left: 0; padding-right: 0;}
 .contents-head.fixed li:nth-child(2) {padding-right: var(--pd);}
 .contents-head.fixed li:nth-child(3) {padding-left: var(--pd);}
 .contents-head.fixed li.tit {position: relative;}

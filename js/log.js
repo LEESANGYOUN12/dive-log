@@ -585,16 +585,30 @@ function svgChart(id, color, mode){
 }
 
 const CHART_DEFS = [
-  {key:'depth', mode:'depth', colorHex:'#7c5cfc', unit:'m', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <strong>수심</strong> <span>(m)</span>'},
-  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', unit:'m/s', fmtValue:(v)=>(v>=0?'+':'')+v.toFixed(2), fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'〽️ <strong>수직 속도</strong> <span>(m/s)</span>'},
-  {key:'hr', mode:'normal', colorHex:'#ff5c77', unit:'bpm', fmtValue:(v)=>Math.round(v), fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <strong>심박수</strong> <span>(bpm)</span>'},
-  {key:'temp', mode:'normal', colorHex:'#ff7d54', unit:'℃', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <strong>수온</strong> <span>(℃)</span>'},
+  {key:'depth', mode:'depth', colorHex:'#7c5cfc', fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <strong>수심</strong> <span>(m)</span>'},
+  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'〽️ <strong>수직 속도</strong> <span>(m/s)</span>'},
+  {key:'hr', mode:'normal', colorHex:'#ff5c77', fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <strong>심박수</strong> <span>(bpm)</span>'},
+  {key:'temp', mode:'normal', colorHex:'#ff7d54', fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <strong>수온</strong> <span>(℃)</span>'},
 ];
 
 // 현재 열려 있는 모든 다이빙의 chart-block-wrap이 공유하는 값이라, 하단
 // 고정 바에서 뷰 모드를 한 번 바꾸면 열려 있는 차트 전부가 한꺼번에 다시
 // 배치된다.
 let chartViewMode = lsGet('chartViewMode') === 'box' ? 'box' : 'list';
+// 차트 SVG는 viewBox 비율을 무시하고(preserveAspectRatio="none") 실제
+// 렌더링 너비에 맞춰 강제로 늘리거나 줄인다. 그래서 svg 내부 요소도 같이
+// 가로로만 늘어나거나 찌그러진다 — 원, 최대/최소 라벨 글자 모두 예외가
+// 아니다. x축 스케일의 역수만큼 되돌려 늘어난 만큼 다시 압축해준다.
+function fixMinmaxLabelScale(svgEl){
+  if (!svgEl) return;
+  const scaleX = (svgEl.getBoundingClientRect().width / CHART_W) || 1;
+  const f = 1/scaleX;
+  svgEl.querySelectorAll('.chart-minmax-label').forEach(t=>{
+    const x = parseFloat(t.getAttribute('x')) || 0;
+    t.setAttribute('transform', `matrix(${f},0,0,1,${(x*(1-f)).toFixed(2)},0)`);
+  });
+}
+
 function applyChartViewMode(){
   document.querySelectorAll('.chart-block-wrap').forEach(el=>{
     el.classList.toggle('box-view', chartViewMode === 'box');
@@ -602,9 +616,11 @@ function applyChartViewMode(){
   $('#chart-view-list').style.display = chartViewMode === 'box' ? '' : 'none';
   $('#chart-view-box').style.display = chartViewMode === 'list' ? '' : 'none';
   // 레이아웃을 다시 배치하면 차트마다 렌더링 너비가 바뀌므로, 토글 이전에
-  // 표시돼 있던 크로스헤어 점은 예전 너비 기준으로 계산된 rx 값이 남아있어
-  // 찌그러진 타원으로 보인다. 그래서 새 너비 기준으로 다시 계산해준다.
+  // 표시돼 있던 크로스헤어 점과 최대/최소 라벨은 예전 너비 기준으로
+  // 계산된 값이 남아있어 찌그러져 보인다. 그래서 새 너비 기준으로 다시
+  // 계산해준다.
   document.querySelectorAll('svg.chart').forEach(svgEl=>{
+    fixMinmaxLabelScale(svgEl);
     const dot = svgEl.querySelector('ellipse[id$="-dot"]');
     if (!dot || dot.style.display === 'none') return;
     const scaleX = (svgEl.getBoundingClientRect().width / CHART_W) || 1;
@@ -736,6 +752,8 @@ function renderInlineCharts(container, records){
       }).join('')}
     </div>`;
 
+  container.querySelector('.chart-block-wrap').classList.toggle('box-view', chartViewMode === 'box');
+
   const geoms = {};
   const chartIds = {};
   CHART_DEFS.forEach(def=>{
@@ -755,12 +773,10 @@ function renderInlineCharts(container, records){
       const zeroY = def.mode==='zero' ? geo.mapY(0) : geo.mapY(geo.scale.min);
       wrap.querySelector(`#${chartId}-area`).setAttribute('d', geo.d + `L ${geo.pts[geo.pts.length-1].x.toFixed(2)} ${zeroY.toFixed(2)} L ${geo.pts[0].x.toFixed(2)} ${zeroY.toFixed(2)} Z`);
     }
-    const minmaxHtml = (v)=> v==null ? '–' : `${def.fmtValue(v)}<tspan class="chart-minmax-unit">${def.unit}</tspan>`;
-    wrap.querySelector(`#${chartId}-max`).innerHTML = minmaxHtml(geo.scale.max);
-    wrap.querySelector(`#${chartId}-min`).innerHTML = minmaxHtml(geo.scale.min);
+    wrap.querySelector(`#${chartId}-max`).textContent = def.fmt(geo.scale.max);
+    wrap.querySelector(`#${chartId}-min`).textContent = def.fmt(geo.scale.min);
+    fixMinmaxLabelScale(wrap.querySelector('svg.chart'));
   });
-
-  container.querySelector('.chart-block-wrap').classList.toggle('box-view', chartViewMode === 'box');
 
   updateInlineCrosshair(container, null, records, geoms, chartIds);
   attachInlineDrag(container, records, geoms, chartIds);

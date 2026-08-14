@@ -1,6 +1,6 @@
 /* 공통 */
 .app {display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; min-height: 100svh;
-  header {padding: var(--pd);  border-bottom: 1px solid var(--border-1);
+  header {padding: var(--pd);  border-bottom: 1px solid var(--border-1); background: #000;
     .inner {max-width: 900px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;}
     h1 {width: 120px; height: 36px; background: url('../images/logo.svg') no-repeat left center; background-size: contain; text-indent: -9999px; overflow: hidden; white-space: nowrap;}
     .header-actions {display: flex; align-items: center; gap: 4px;}

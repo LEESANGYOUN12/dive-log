@@ -92,14 +92,14 @@ table.dive-table tr.dive-row.expanded td {background: var(--bg); border-bottom-c
 table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
 
 /* 챠트 */
-.chart-block {border-bottom: 2px dashed var(--border-1); padding: 24px 6px; min-width: 0;}
+.chart-block {border-bottom: 2px dashed var(--border-1); padding: 24px 0 24px 6px; min-width: 0;}
 :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
 :has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 13px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 12px;  gap: 8px; padding: 0 12px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li {flex: 1;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li span {display: block;}
 .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  .chart-block {padding: 16px 6px;}
+  .chart-block {padding: 16px 0 16px 6px;}
   .chart-block:nth-child(odd) {border-right: 2px dashed var(--border-1);}
   .chart-block:nth-last-child(-n+2) {border-bottom: none;}
 }
@@ -115,7 +115,8 @@ svg.chart .chart-zero-line {stroke: var(--chart-zero-line);}
 svg.chart .chart-crosshair-line {stroke: var(--chart-crosshair);}
 svg.chart .chart-minmax-label {fill: var(--muted-2);}
 .chart-minmax-unit {font-size: 0;}
-.chart-time-axis {display: flex; justify-content: space-between; padding: 0 4% 0 1%; font-size: 10px; color: var(--muted-2); margin-top: -8px;}
+.chart-time-axis {display: flex; justify-content: space-between; padding: 0 9% 0 1.5%; font-size: 10px; color: var(--muted-2); margin-top: -8px;}
+.chart-block-wrap.box-view .chart-time-axis {padding-right: 17%;}
 .chart-block-wrap.box-view .chart-time-axis span:nth-child(even) {display: none;}
 .no-data {height: 60px; display: flex; align-items: center; justify-content: center; color: var(--muted-2); font-size: 11.5px;}
 

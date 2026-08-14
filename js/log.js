@@ -620,16 +620,15 @@ function applyChartViewMode(){
   });
   $('#chart-view-list').style.display = chartViewMode === 'box' ? '' : 'none';
   $('#chart-view-box').style.display = chartViewMode === 'list' ? '' : 'none';
-  // 레이아웃을 다시 배치하면 차트마다 렌더링 너비가 바뀌므로, 토글 이전에
-  // 표시돼 있던 크로스헤어 점과 최대/최소 라벨은 예전 너비 기준으로
-  // 계산된 값이 남아있어 찌그러져 보인다. 그래서 새 너비 기준으로 다시
-  // 계산해준다.
-  document.querySelectorAll('svg.chart').forEach(svgEl=>{
-    fixMinmaxLabelScale(svgEl);
-    const dot = svgEl.querySelector('ellipse[id$="-dot"]');
-    if (!dot || dot.style.display === 'none') return;
-    const scaleX = (svgEl.getBoundingClientRect().width / CHART_W) || 1;
-    dot.setAttribute('rx', (DOT_R/scaleX).toFixed(2));
+  // padR()이 리스트형/박스형마다 다른 값을 돌려주므로, 그리드선/선 경로/
+  // 라벨 위치 전부 새 여백 기준으로 다시 계산해야 한다. 이 값들은 차트를
+  // 맨 처음 펼칠 때 한 번만 구워지므로, 이미 펼쳐진 차트는 뷰를 전환할
+  // 때마다 통째로 다시 그려서 반영한다.
+  openChartContainers.forEach(container=>{
+    if (!container._records) return;
+    if (container._cleanupDrag) container._cleanupDrag();
+    if (container._cleanupSticky) container._cleanupSticky();
+    renderInlineCharts(container, container._records);
   });
 }
 
@@ -721,6 +720,7 @@ function computeVSpeedStats(records){
 // 줄 포함). `uid`로 이 다이빙의 엘리먼트 id를 구분해서, 여러 다이빙 행을
 // 동시에 펼쳐도 id가 겹치지 않게 한다.
 function renderInlineCharts(container, records){
+  container._records = records; // 뷰 모드 전환 시 다시 그리기 위해 보관
   const uid = 'inline-' + Math.random().toString(36).slice(2,8);
   const totalSec = records.length ? records[records.length-1].t - records[0].t : 0;
   const vs = computeVSpeedStats(records);

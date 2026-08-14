@@ -506,7 +506,12 @@ function openSession(id){
 // 단위 체계로만 계산하면 된다.
 const CHART_W = 600, CHART_H = 140;
 const DOT_R = 3.2;
-const PAD = {l:10, r:80, t:10, b:16}; // 오른쪽 여백은 최소/최대값 라벨 표시 공간
+const PAD = {l:10, t:10, b:16};
+// 오른쪽 여백은 최소/최대값 라벨 표시 공간. 박스형은 컨테이너 실제 너비가
+// 훨씬 좁아 같은 값이라도 물리적으로 쓸 수 있는 공간이 작으므로, 리스트형/
+// 박스형을 따로 조절할 수 있게 분리해뒀다.
+const PAD_R = {list: 70, box: 80};
+function padR(){ return chartViewMode === 'box' ? PAD_R.box : PAD_R.list; }
 
 // 차트의 `mode`에 따라 y축 최소/최대값을 정한다:
 // - 'zero': 0을 기준으로 대칭(수직 속도 — +/- 양쪽 스케일을 같게 해서
@@ -536,7 +541,7 @@ function computeScale(values, mode){
 function buildChartGeometry(values, mode){
   const scale = computeScale(values, mode);
   const n = values.length;
-  const innerW = CHART_W - PAD.l - PAD.r, innerH = CHART_H - PAD.t - PAD.b;
+  const innerW = CHART_W - PAD.l - padR(), innerH = CHART_H - PAD.t - PAD.b;
   const range = (scale.max - scale.min) || 1;
   const mapY = (v) => mode === 'depth'
     ? PAD.t + ((v - scale.min)/range) * innerH
@@ -573,14 +578,14 @@ function svgChart(id, color, mode){
         <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
       </filter>
     </defs>
-    ${[0.25,0.5,0.75].map(f=>`<line class="chart-grid-line" x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" y2="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" stroke-width="1"/>`).join('')}
-    ${zeroLineY!=null ? `<line class="chart-zero-line" x1="${PAD.l}" x2="${CHART_W-PAD.r}" y1="${zeroLineY}" y2="${zeroLineY}" stroke-dasharray="3,3"/>` : ''}
+    ${[0.25,0.5,0.75].map(f=>`<line class="chart-grid-line" x1="${PAD.l}" x2="${CHART_W-padR()}" y1="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" y2="${PAD.t+(CHART_H-PAD.t-PAD.b)*f}" stroke-width="1"/>`).join('')}
+    ${zeroLineY!=null ? `<line class="chart-zero-line" x1="${PAD.l}" x2="${CHART_W-padR()}" y1="${zeroLineY}" y2="${zeroLineY}" stroke-dasharray="3,3"/>` : ''}
     <path id="${id}-area" fill="url(#${id}-fill)" stroke="none" d=""></path>
     <path id="${id}-line" fill="none" stroke="${color}" stroke-width="1.8" filter="url(#${id}-glow)" d=""></path>
     <line id="${id}-crosshair" class="chart-crosshair-line" x1="0" x2="0" y1="${PAD.t}" y2="${CHART_H-PAD.b}" stroke-width="2" stroke-dasharray="4,3" style="display:none;"/>
     <ellipse id="${id}-dot" rx="${DOT_R}" ry="${DOT_R}" fill="${color}" style="display:none;"/>
-    <text id="${id}-max" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${PAD.t+4}" text-anchor="start" font-size="9"></text>
-    <text id="${id}-min" class="chart-minmax-label" x="${CHART_W-PAD.r+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="9"></text>
+    <text id="${id}-max" class="chart-minmax-label" x="${CHART_W-padR()+4}" y="${PAD.t+4}" text-anchor="start" font-size="9"></text>
+    <text id="${id}-min" class="chart-minmax-label" x="${CHART_W-padR()+4}" y="${CHART_H-PAD.b}" text-anchor="start" font-size="9"></text>
   </svg>`;
 }
 
@@ -867,7 +872,7 @@ function attachInlineDrag(container, records, geoms, chartIds){
   function indexFromClientX(clientX){
     const rect = activeSvg.getBoundingClientRect();
     const relX = ((clientX - rect.left)/rect.width) * CHART_W;
-    const innerW = CHART_W - PAD.l - PAD.r;
+    const innerW = CHART_W - PAD.l - padR();
     const frac = (relX - PAD.l)/innerW;
     const idx = Math.round(frac * (n-1));
     return Math.max(0, Math.min(n-1, idx));

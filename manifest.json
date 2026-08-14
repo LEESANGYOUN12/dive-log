@@ -1,6 +1,6 @@
 {
   "name": "Veton Dive Log",
-  "short_name": "Veton",
+  "short_name": "Veton Dive",
   "description": "Amazfit/Zepp .fit 파일로 다이빙 기록을 분석하는 프리다이빙 로그",
   "start_url": "./index.html",
   "scope": "./",

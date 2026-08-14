@@ -99,7 +99,7 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
 :has(.chart-block-wrap.box-view ) .chart-label ul li {flex: 1;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li span {display: block;}
 .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  .chart-block {padding: 16px 0 16px 6px;}
+  .chart-block {padding: 12px 0 12px 6px;}
   .chart-block:nth-child(odd) {border-right: 2px dashed var(--border-1);}
   .chart-block:nth-last-child(-n+2) {border-bottom: none;}
 }

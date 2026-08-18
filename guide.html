@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Veton Dive Log — 사용 가이드</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-29 -20 655 434'%3E%3Cg transform='translate(0,395) scale(0.1,-0.1)' fill='%236449A1'%3E%3Cpath d='M10 3944 c0 -2 32 -54 72 -116 149 -233 307 -578 407 -889 41 -127 111 -394 111 -421 0 -12 20 -17 85 -22 148 -11 317 -57 446 -122 285 -143 463 -387 528 -725 l17 -94 40 -3 c253 -16 457 -87 632 -219 113 -85 170 -140 266 -258 109 -132 144 -185 167 -252 54 -152 24 -400 -65 -541 -21 -33 -34 -43 -78 -55 -103 -29 -205 -41 -363 -41 -210 -1 -230 1 -455 59 -131 34 -161 38 -311 42 -179 6 -225 -5 -111 -26 104 -19 218 -55 322 -101 218 -97 379 -143 530 -150 273 -13 387 2 631 86 230 79 290 88 549 88 l225 -1 185 -47 c156 -39 205 -48 310 -52 69 -3 145 -1 170 3 l45 9 -90 18 c-114 23 -316 90 -350 115 -19 15 -220 91 -265 100 -142 31 -202 36 -392 35 l-168 -1 -1 51 c0 28 -2 58 -3 66 -2 8 -6 56 -10 105 -24 306 -150 835 -299 1255 -121 340 -190 497 -331 750 -214 384 -268 459 -398 550 -96 68 -260 133 -389 155 -19 3 -50 10 -69 15 -19 4 -57 11 -85 15 -134 17 -309 53 -423 85 -117 33 -185 66 -739 357 -189 100 -343 179 -343 177z'/%3E%3Cpath d='M5944 3936 c-10 -7 -73 -41 -139 -76 -66 -34 -262 -137 -435 -228 -338 -178 -434 -219 -570 -247 -138 -28 -225 -45 -270 -50 -30 -4 -73 -10 -95 -15 -22 -5 -55 -11 -73 -15 -270 -47 -476 -156 -599 -317 -55 -72 -238 -391 -391 -683 -69 -132 -127 -241 -128 -243 -1 -2 -45 10 -98 27 -59 19 -117 31 -151 31 -30 0 -55 -2 -55 -4 0 -2 13 -36 30 -76 85 -207 214 -646 270 -925 17 -82 32 -150 33 -152 2 -1 27 30 57 69 72 94 207 230 295 296 131 98 313 179 455 202 36 6 76 12 90 14 14 3 50 5 81 5 l56 1 7 50 c32 240 138 454 301 608 152 143 379 250 592 278 32 4 61 9 66 10 4 1 28 2 55 3 l47 1 38 157 c97 401 269 818 472 1148 47 76 84 140 82 141 -2 2 -12 -2 -23 -10z'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
@@ -126,6 +127,28 @@
   .step.reverse .phone-col{order:2;}
   .step.reverse .text-col{order:1;}
 
+  .phase-divider{
+    position:relative;
+    display:flex; align-items:center; justify-content:center;
+    padding:14px 0 56px;
+  }
+  .phase-divider::before{
+    content:''; position:absolute; left:0; right:0; top:50%;
+    height:2px;
+    background:linear-gradient(90deg, transparent, rgba(139,107,255,0.65) 15%, rgba(55,230,196,0.65) 85%, transparent);
+  }
+  .phase-divider span{
+    position:relative; z-index:1;
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--bg-1);
+    padding:9px 20px;
+    border-radius:999px;
+    border:1px solid rgba(139,107,255,0.35);
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12.5px; letter-spacing:.08em; color:#c9baff;
+    white-space:nowrap;
+  }
+
   .phone-col{display:flex; justify-content:center; position:relative;}
   .phone-frame{
     position:relative;
@@ -136,11 +159,8 @@
       0 30px 70px -20px rgba(0,0,0,0.6),
       0 0 0 1px rgba(255,255,255,0.06),
       0 0 60px -10px var(--glow, rgba(139,107,255,0.25));
-    transform:rotate(var(--tilt,0deg));
-    transition:transform .5s ease;
   }
   .phone-frame img{display:block; width:100%; height:auto;}
-  .step:hover .phone-frame{ transform: rotate(0deg) scale(1.02); }
 
   .step-index{
     font-family:'IBM Plex Mono',monospace;
@@ -278,8 +298,8 @@
 
 <main class="steps">
 
-  <!-- STEP 1 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(139,107,255,0.35);">
+  <!-- STEP 01 -->
+  <section class="step" style="--glow:rgba(139,107,255,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-export-1.jpg" alt="Zepp 앱 운동 탭"></div></div>
     <div class="text-col">
       <div class="step-index">STEP 01 · Zepp 앱에서 준비하기</div>
@@ -293,8 +313,8 @@
     </div>
   </section>
 
-  <!-- STEP 2 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(139,107,255,0.35);">
+  <!-- STEP 02 -->
+  <section class="step reverse" style="--glow:rgba(139,107,255,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-export-2.jpg" alt="운동 내역 목록"></div></div>
     <div class="text-col">
       <div class="step-index">STEP 02 · 운동 내역에서 날짜 찾기</div>
@@ -308,8 +328,8 @@
     </div>
   </section>
 
-  <!-- STEP 3 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(55,230,196,0.3);">
+  <!-- STEP 03 -->
+  <section class="step" style="--glow:rgba(55,230,196,0.3);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-export-3.jpg" alt="다이빙 상세 화면"></div></div>
     <div class="text-col">
       <div class="step-index">STEP 03 · 상세 화면에서 메뉴 열기</div>
@@ -323,8 +343,8 @@
     </div>
   </section>
 
-  <!-- STEP 4 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(55,230,196,0.3);">
+  <!-- STEP 04 -->
+  <section class="step reverse" style="--glow:rgba(55,230,196,0.3);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-export-4.jpg" alt="동작 메뉴 - 데이터 내보내기"></div></div>
     <div class="text-col">
       <div class="step-index">STEP 04 · 데이터 내보내기 선택</div>
@@ -337,25 +357,40 @@
     </div>
   </section>
 
-  <!-- STEP 5 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(139,107,255,0.35);">
+  <!-- STEP 05 -->
+  <section class="step" style="--glow:rgba(139,107,255,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-export-5.jpg" alt="TCX/FIT 형식 선택 화면"></div></div>
     <div class="text-col">
       <div class="step-index">STEP 05 · FIT 형식으로 저장</div>
       <h2>FIT 형식을 선택하면 끝이에요</h2>
       <p class="desc">TCX 형식과 FIT 형식 중 반드시 <b>FIT 형식</b>을 선택하세요. 변환된 파일은 휴대폰의 <b>Download</b> 폴더에 저장됩니다.</p>
       <ul class="points">
-        <li>저장된 <b>.fit 파일</b>을 웹앱(STEP 06)의 업로드 화면으로 옮기면 바로 이어서 진행할 수 있어요.</li>
+        <li>저장된 <b>.fit 파일</b>을 웹앱(STEP 01)의 업로드 화면으로 옮기면 바로 이어서 진행할 수 있어요.</li>
       </ul>
       <div class="badge-row"><span class="badge teal">FIT 형식 선택 · Download 폴더 저장</span></div>
     </div>
   </section>
 
-  <!-- STEP 6 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(139,107,255,0.35);">
+  <div class="summary" style="margin:0 auto 56px;">
+    <div class="summary-card">
+      <h3>📦 Zepp → FIT 파일 추출 흐름 한눈에 보기</h3>
+      <div class="summary-flow">
+        <div class="sf-item"><div class="num">01</div><div class="txt"><b>운동 탭에서 기록 확인</b><span>Zepp 앱 하단 운동 탭 → 실내 프리다이빙 카드 확인</span></div></div>
+        <div class="sf-item"><div class="num">02</div><div class="txt"><b>운동 내역에서 날짜 선택</b><span>운동 내역 › 목록에서 내보낼 날짜 탭</span></div></div>
+        <div class="sf-item"><div class="num">03</div><div class="txt"><b>상세 화면에서 ⋯ 메뉴 열기</b><span>우측 상단 더보기(⋯) 아이콘 탭</span></div></div>
+        <div class="sf-item"><div class="num">04</div><div class="txt"><b>데이터 내보내기 선택</b><span>동작 메뉴에서 데이터 내보내기 탭</span></div></div>
+        <div class="sf-item"><div class="num">05</div><div class="txt"><b>FIT 형식으로 저장</b><span>Download 폴더에 .fit 파일 생성 → 웹앱에 업로드</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="phase-divider"><span>📱 Zepp 앱 준비 끝 · 여기부터는 Veton Dive Log 웹앱 화면</span></div>
+
+  <!-- STEP 01 -->
+  <section class="step" style="--glow:rgba(139,107,255,0.35); border-top:none;">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-1.png" alt="처음 접속 화면"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 06 · 시작하기</div>
+      <div class="step-index">STEP 01 · 시작하기</div>
       <h2>처음 접속하면 파일을 기다리는 빈 화면이 보여요</h2>
       <p class="desc">아직 업로드된 다이빙이 없다는 안내와 함께, 점선 박스 영역이 표시됩니다. 여기서 시작하면 됩니다.</p>
       <ul class="points">
@@ -367,11 +402,11 @@
     </div>
   </section>
 
-  <!-- STEP 7 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(139,107,255,0.35);">
+  <!-- STEP 02 -->
+  <section class="step reverse" style="--glow:rgba(139,107,255,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-2.png" alt="세션 목록 라이트 모드"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 07 · 세션 목록</div>
+      <div class="step-index">STEP 02 · 세션 목록</div>
       <h2>업로드 1건이 날짜 카드 하나가 됩니다</h2>
       <p class="desc">파일을 올리면 그 즉시 날짜별 카드가 생성돼요. 카드만 봐도 그날의 다이빙이 어땠는지 한눈에 파악할 수 있어요.</p>
       <ul class="points">
@@ -383,11 +418,11 @@
     </div>
   </section>
 
-  <!-- STEP 8 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(55,230,196,0.3);">
+  <!-- STEP 03 -->
+  <section class="step" style="--glow:rgba(55,230,196,0.3);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-3.png" alt="다크 모드"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 08 · 다크 모드</div>
+      <div class="step-index">STEP 03 · 다크 모드</div>
       <h2>화면 밝기, 원하는 대로</h2>
       <p class="desc">같은 화면이지만 다크 모드에서는 눈이 편안하도록 톤이 전체적으로 낮아집니다. 야간에 기록을 확인할 때 특히 유용해요.</p>
       <ul class="points">
@@ -399,11 +434,11 @@
     </div>
   </section>
 
-  <!-- STEP 9 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(139,107,255,0.35);">
+  <!-- STEP 04 -->
+  <section class="step reverse" style="--glow:rgba(139,107,255,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-4.png" alt="연도 필터"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 09 · 기간 필터 (연도)</div>
+      <div class="step-index">STEP 04 · 기간 필터 (연도)</div>
       <h2>기록이 쌓일수록, 필터로 좁혀보세요</h2>
       <p class="desc">첫 번째 드롭다운에서 연도를 고르면 해당 연도의 세션만 남습니다. 세션을 클릭하면 다이빙별 표가 함께 열려요.</p>
       <ul class="points">
@@ -417,11 +452,11 @@
     </div>
   </section>
 
-  <!-- STEP 10 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(55,230,196,0.3);">
+  <!-- STEP 05 -->
+  <section class="step" style="--glow:rgba(55,230,196,0.3);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-5.png" alt="연도+월 필터"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 10 · 기간 필터 (연도+월)</div>
+      <div class="step-index">STEP 05 · 기간 필터 (연도+월)</div>
       <h2>월까지 지정하면 더 빠르게 찾아요</h2>
       <p class="desc">두 번째 드롭다운에서 월까지 선택하면, 예를 들어 <b>2026년 7월</b>처럼 딱 그 달의 세션만 남습니다.</p>
       <ul class="points">
@@ -433,11 +468,11 @@
     </div>
   </section>
 
-  <!-- STEP 11 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(139,107,255,0.4);">
+  <!-- STEP 06 -->
+  <section class="step reverse" style="--glow:rgba(139,107,255,0.4);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-6.png" alt="리스트형 차트"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 11 · 상세 차트 · 리스트형</div>
+      <div class="step-index">STEP 06 · 상세 차트 · 리스트형</div>
       <h2>수심부터 심박까지, 위에서 아래로</h2>
       <p class="desc">다이빙 하나를 클릭하면 상세 차트 팝업이 열립니다. 기본은 차트가 세로로 나열되는 <b>리스트형</b>이에요.</p>
       <ul class="points">
@@ -450,11 +485,11 @@
     </div>
   </section>
 
-  <!-- STEP 12 -->
-  <section class="step" style="--tilt:-3deg; --glow:rgba(55,230,196,0.35);">
+  <!-- STEP 07 -->
+  <section class="step" style="--glow:rgba(55,230,196,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-7.png" alt="박스형 차트"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 12 · 상세 차트 · 박스형</div>
+      <div class="step-index">STEP 07 · 상세 차트 · 박스형</div>
       <h2>4개 차트를 한 화면에, 2×2로</h2>
       <p class="desc">수심 · 수직 속도 · 심박수 · 수온 차트를 격자로 모아 한눈에 비교할 수 있는 <b>박스형</b> 레이아웃입니다.</p>
       <ul class="points">
@@ -466,11 +501,11 @@
     </div>
   </section>
 
-  <!-- STEP 13 -->
-  <section class="step reverse" style="--tilt:3deg; --glow:rgba(55,230,196,0.35);">
+  <!-- STEP 08 -->
+  <section class="step reverse" style="--glow:rgba(55,230,196,0.35);">
     <div class="phone-col"><div class="phone-frame"><img src="images/guide-step-8.png" alt="바로가기 추가 버튼"></div></div>
     <div class="text-col">
-      <div class="step-index">STEP 13 · 홈 화면에 설치</div>
+      <div class="step-index">STEP 08 · 홈 화면에 설치</div>
       <h2>앱처럼 쓰고 싶다면, 홈 화면에 추가하세요</h2>
       <p class="desc">설치를 지원하는 브라우저에서 접속하면 헤더에 <b>바로가기 추가</b> 버튼이 나타납니다. 눌러서 설치하면 주소창 없는 앱 화면으로 바로 실행돼요.</p>
       <ul class="points">
@@ -499,7 +534,7 @@
         <li>모든 데이터는 브라우저 <span class="mono">localStorage</span>에만 저장되며 외부 서버로 전송되지 않습니다.</li>
         <li>브라우저나 기기를 바꾸면 이전 기록이 보이지 않으니 참고하세요.</li>
         <li>가장 안정적인 사용을 위해 크롬 브라우저를 권장합니다.</li>
-        <li>헤더의 <b style="color:#fff">바로가기 추가</b> 버튼으로 홈 화면에 앱처럼 설치할 수 있어요 (STEP 13 참고).</li>
+        <li>헤더의 <b style="color:#fff">바로가기 추가</b> 버튼으로 홈 화면에 앱처럼 설치할 수 있어요 (STEP 08 참고).</li>
       </ul>
     </div>
   </div>

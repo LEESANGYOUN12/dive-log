@@ -329,6 +329,38 @@ function toast(msg){
   toast._tm = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
+// window.confirm 대신 쓰는, 디자인이 입혀진 확인창. 확인을 누르면 true,
+// 취소하거나 배경을 클릭하면 false로 resolve된다.
+function showConfirm(message, opts){
+  opts = opts || {};
+  const overlay = $('#confirm-overlay');
+  const okBtn = $('#confirm-ok');
+  const cancelBtn = $('#confirm-cancel');
+  $('#confirm-message').textContent = message;
+  okBtn.textContent = opts.okText || '확인';
+  cancelBtn.textContent = opts.cancelText || '취소';
+  okBtn.classList.toggle('danger', !!opts.danger);
+  return new Promise(resolve=>{
+    function cleanup(result){
+      overlay.classList.remove('show');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlay);
+      document.removeEventListener('keydown', onKeydown);
+      resolve(result);
+    }
+    function onOk(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    function onOverlay(e){ if (e.target === overlay) cleanup(false); }
+    function onKeydown(e){ if (e.key === 'Escape') cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlay);
+    document.addEventListener('keydown', onKeydown);
+    overlay.classList.add('show');
+  });
+}
+
 /* ============================== 세션(업로드) 목록 ============================== */
 // 둘 다 '' 이면 "전체"(필터 없음)를 뜻한다. filterMonth는 filterYear가
 // 특정 연도로 선택돼 있을 때만 의미가 있다 — syncFilterSelects() 참고.
@@ -427,8 +459,8 @@ function renderSessionList(){
 }
 
 // 업로드 하나를 삭제한다: 다이빙 레코드 → 다이빙 메타 목록 → 세션 자체 순.
-function deleteSession(id){
-  if (!confirm('이 업로드 기록을 삭제할까요? 되돌릴 수 없어요.')) return;
+async function deleteSession(id){
+  if (!(await showConfirm('이 업로드 기록을 삭제할까요? 되돌릴 수 없어요.', {okText:'삭제', danger:true}))) return;
   const dives = loadSessionDives(id);
   dives.forEach(d=>deleteDiveRecords(d.id));
   lsDel('dives:'+id);
@@ -1142,8 +1174,8 @@ dropzone.addEventListener('drop', e=>{
 $('#close-session').addEventListener('click', ()=>{
   closeSessionView();
 });
-$('#reset-all').addEventListener('click', ()=>{
-  if (!confirm('업로드한 모든 다이빙 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
+$('#reset-all').addEventListener('click', async ()=>{
+  if (!(await showConfirm('업로드한 모든 다이빙 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.', {okText:'초기화', danger:true}))) return;
   sessions.forEach(s=>{
     const dives = loadSessionDives(s.id);
     dives.forEach(d=>deleteDiveRecords(d.id));
@@ -1165,13 +1197,13 @@ if (isStandaloneApp){
 
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
 // #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
-window.addEventListener('popstate', ()=>{
+window.addEventListener('popstate', async ()=>{
   if (selectedSessionId !== null){
     closeSessionView(true);
     return;
   }
   if (isStandaloneApp){
-    if (confirm('앱을 종료하시겠습니까?')){
+    if (await showConfirm('앱을 종료하시겠습니까?', {okText:'종료'})){
       history.back(); // 가드까지 소비했으니 한 번 더 뒤로 → 실제 종료
     } else {
       history.pushState({exitGuard:true}, ''); // 가드를 다시 쌓아 다음 뒤로가기도 잡는다

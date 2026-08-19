@@ -144,6 +144,21 @@ body.has-fixed-info-bar {padding-bottom: 60px;}
 .toast {position: fixed; left: 50%; top: 26px; transform: translateX(-50%); background: var(--toast-bg); color: var(--toast-text); padding: 12px 20px; border-radius: 999px; font-size: 12px; font-weight: 600; border: none; box-shadow: 0 12px 30px -10px rgba(20,20,50,.5); opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 9999;}
 .toast.show {opacity: 1; transform: translateX(-50%) translateY(4px);}
 
+/* 확인창 (window.confirm 대체) */
+.confirm-overlay {position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(10,8,24,.5); opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  &.show {opacity: 1; pointer-events: auto;}
+  .confirm-box {width: 100%; max-width: 320px; background: var(--surface); border-radius: 16px; padding: 24px; box-shadow: 0 24px 60px -20px rgba(20,20,50,.5); transform: translateY(8px) scale(.97); transition: transform .2s ease;}
+  &.show .confirm-box {transform: translateY(0) scale(1);}
+  #confirm-message {font-size: 14px; line-height: 1.6; color: var(--text); white-space: pre-line; margin-bottom: 20px;}
+  .confirm-actions {display: flex; gap: 8px;
+    button {flex: 1; height: 40px; border-radius: var(--radius); font-size: 13px; font-weight: 600;}
+  }
+  #confirm-cancel {background: var(--surface-2); color: var(--text-secondary); border: 1px solid var(--border-2);}
+  #confirm-ok {background: var(--ac-01); color: #fff;
+    &.danger {background: var(--coral);}
+  }
+}
+
 #dive-table-body .info-bar:first-child {display: none;}
 
 /* 시작 스플래시 */

@@ -294,6 +294,7 @@ const deleteDiveRecords = (id) => lsDel('records:'+id);
 let sessions = [];        // [{id, fileName, uploadedAt, startTime, endTime, maxDepth, diveCount, gps}]
 let currentSessionDives = null; // 현재 열려 있는 세션의 다이빙 메타 목록
 let selectedSessionId = null;
+let contentsHistoryPushed = false; // #contents를 열 때 히스토리를 쌓았는지 (뒤로가기로 닫기 위함)
 
 const $ = (sel) => document.querySelector(sel);
 const fmtTime = (sec) => {
@@ -434,12 +435,27 @@ function deleteSession(id){
   sessions = sessions.filter(s=>s.id!==id);
   saveSessions(sessions);
   if (selectedSessionId === id){
-    closeAllDiveCharts();
-    selectedSessionId = null;
-    $('#contents').style.display = 'none';
+    closeSessionView();
+  } else {
+    renderSessionList();
   }
-  renderSessionList();
   toast('업로드 기록을 삭제했어요');
+}
+
+// #contents를 닫는다 — 뒤로가기로 열렸을 때 쌓인 히스토리도 함께 정리한다.
+// fromPopstate가 true면 popstate 이벤트에 대한 반응이므로 history.back()을
+// 다시 호출하지 않는다 (그러면 무한 루프/불필요한 페이지 이탈이 된다).
+function closeSessionView(fromPopstate){
+  closeAllDiveCharts();
+  selectedSessionId = null;
+  $('#contents').style.display = 'none';
+  renderSessionList();
+  if (contentsHistoryPushed && !fromPopstate){
+    contentsHistoryPushed = false;
+    history.back();
+  } else {
+    contentsHistoryPushed = false;
+  }
 }
 
 // 위경도 숫자만 나오는 건 지도 없이는 쓸모가 없어서 일단 꺼둠. 나중에
@@ -454,6 +470,10 @@ function openSession(id){
   const s = sessions.find(x=>x.id===id);
   if (!s) return;
   closeAllDiveCharts();
+  if (selectedSessionId === null){
+    history.pushState({diveLogContents:true}, '');
+    contentsHistoryPushed = true;
+  }
   selectedSessionId = id;
   $('#contents').style.display = '';
   $('#session-title').textContent = fmtDateFull(s.startTime);
@@ -1120,14 +1140,10 @@ dropzone.addEventListener('drop', e=>{
 });
 
 $('#close-session').addEventListener('click', ()=>{
-  closeAllDiveCharts();
-  selectedSessionId = null;
-  $('#contents').style.display = 'none';
-  renderSessionList();
+  closeSessionView();
 });
 $('#reset-all').addEventListener('click', ()=>{
   if (!confirm('업로드한 모든 다이빙 기록을 삭제할까요? 이 작업은 되돌릴 수 없어요.')) return;
-  closeAllDiveCharts();
   sessions.forEach(s=>{
     const dives = loadSessionDives(s.id);
     dives.forEach(d=>deleteDiveRecords(d.id));
@@ -1135,10 +1151,16 @@ $('#reset-all').addEventListener('click', ()=>{
   });
   sessions = [];
   saveSessions(sessions);
-  selectedSessionId = null;
-  $('#contents').style.display = 'none';
-  renderSessionList();
+  closeSessionView();
   toast('모두 초기화했어요');
+});
+
+// #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
+// #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
+window.addEventListener('popstate', ()=>{
+  if (selectedSessionId !== null){
+    closeSessionView(true);
+  }
 });
 
 // 시작할 때 한 번 실행되는 정리 작업: 지문(fingerprint)이 같은 세션들을

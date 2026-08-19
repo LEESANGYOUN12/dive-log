@@ -295,6 +295,7 @@ let sessions = [];        // [{id, fileName, uploadedAt, startTime, endTime, max
 let currentSessionDives = null; // 현재 열려 있는 세션의 다이빙 메타 목록
 let selectedSessionId = null;
 let contentsHistoryPushed = false; // #contents를 열 때 히스토리를 쌓았는지 (뒤로가기로 닫기 위함)
+let suppressExitCheck = false; // closeSessionView가 자체적으로 유발한 popstate인지 (종료 확인창을 건너뛰기 위함)
 
 const $ = (sel) => document.querySelector(sel);
 const fmtTime = (sec) => {
@@ -484,6 +485,7 @@ function closeSessionView(fromPopstate){
   renderSessionList();
   if (contentsHistoryPushed && !fromPopstate){
     contentsHistoryPushed = false;
+    suppressExitCheck = true; // 이 back()으로 발생할 popstate는 "나가기 시도"가 아니라 정리용이다
     history.back();
   } else {
     contentsHistoryPushed = false;
@@ -1200,6 +1202,10 @@ if (isStandaloneApp){
 window.addEventListener('popstate', async ()=>{
   if (selectedSessionId !== null){
     closeSessionView(true);
+    return;
+  }
+  if (suppressExitCheck){
+    suppressExitCheck = false; // ✕ 버튼 등으로 #contents를 닫으며 스스로 유발한 popstate — 무시
     return;
   }
   if (isStandaloneApp){

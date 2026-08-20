@@ -1189,31 +1189,17 @@ $('#reset-all').addEventListener('click', async ()=>{
   toast('모두 초기화했어요');
 });
 
-// PWA(홈 화면 설치) standalone 모드에서만: 앱을 완전히 나가는 마지막
-// 뒤로가기 앞에 확인창을 끼워 넣는다. 시작하자마자 히스토리를 하나 쌓아두고,
-// 그게 소비될 때(=더 이상 닫을 #contents도 없는 상태)를 "진짜 나가기 직전"으로
-// 본다. 일반 브라우저 탭에서는 이 가드를 쌓지 않으므로 평소처럼 동작한다.
-if (isStandaloneApp){
-  history.pushState({exitGuard:true}, '');
-}
-
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
 // #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
-window.addEventListener('popstate', async ()=>{
+// #contents가 이미 닫힌 상태에서 뒤로가기를 누르면 별도 처리 없이 평소
+// 브라우저/PWA 동작 그대로 앱을 나간다.
+window.addEventListener('popstate', ()=>{
   if (selectedSessionId !== null){
     closeSessionView(true);
     return;
   }
   if (suppressExitCheck){
     suppressExitCheck = false; // ✕ 버튼 등으로 #contents를 닫으며 스스로 유발한 popstate — 무시
-    return;
-  }
-  if (isStandaloneApp){
-    if (await showConfirm('앱을 종료하시겠습니까?', {okText:'종료'})){
-      history.back(); // 가드까지 소비했으니 한 번 더 뒤로 → 실제 종료
-    } else {
-      history.pushState({exitGuard:true}, ''); // 가드를 다시 쌓아 다음 뒤로가기도 잡는다
-    }
   }
 });
 

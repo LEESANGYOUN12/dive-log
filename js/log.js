@@ -5,8 +5,16 @@
 // iOS는 display-mode 미디어쿼리 대신 navigator.standalone 플래그로 판단한다.
 const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-// TEMP DEBUG — 원인 확인되면 바로 제거
-alert('DEBUG isStandaloneApp=' + isStandaloneApp + ' historyLen=' + history.length);
+// 실기기 확인 결과: 안드로이드 WebAPK는 "앱을 켠 직후 첫 뒤로가기"를
+// pushState로 뭘 쌓아놨든 상관없이 무조건 앱 종료로 처리했다(JS의 popstate까지
+// 오지도 않음). pushState 같은 same-document 이동이 아니라 진짜 주소가 바뀌는
+// 내비게이션이 한 번은 있어야 안드로이드가 정상적인 뒤로가기 스택으로
+// 인식하는 것으로 보여서, 켜지자마자 짧게 한 번 더 리로드시킨다(쿼리 마커로
+// 무한 루프 방지). 스플래시가 살짝 더 오래 보일 수 있는 대신, 그 이후부터는
+// 뒤로가기를 JS가 정상적으로 가로챌 수 있길 기대한다.
+if (isStandaloneApp && !location.search.includes('pwa=1')){
+  location.href = location.pathname + '?pwa=1' + location.hash;
+}
 
 // 서비스워커 등록 — 캐싱 없이 등록 자체만으로 안드로이드가 완전한 PWA(WebAPK)로
 // 설치하게 하기 위함이다 (뒤로가기 히스토리 처리와 관련, 아래 exitArmed 로직 참고).
@@ -1219,16 +1227,12 @@ if (isStandaloneApp){
   // 안드로이드 쪽 back stack에 반영이 안 되는 경우가 실기기에서 확인됐다.
   setTimeout(()=>{
     history.pushState({exitGuard:true}, '', '#exit-guard');
-    // TEMP DEBUG — 원인 확인되면 바로 제거
-    toast('DEBUG guard pushed, historyLen=' + history.length);
   }, 0);
 }
 
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
 // #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
 window.addEventListener('popstate', ()=>{
-  // TEMP DEBUG — 원인 확인되면 바로 제거
-  alert('DEBUG popstate fired! historyLen=' + history.length + ' state=' + JSON.stringify(history.state));
   if (selectedSessionId !== null){
     closeSessionView(true);
     return;

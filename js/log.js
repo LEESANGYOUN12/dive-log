@@ -4,6 +4,13 @@
 // 때마다 불필요하게 로고를 보게 하지 않는다.
 // iOS는 display-mode 미디어쿼리 대신 navigator.standalone 플래그로 판단한다.
 const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+// 서비스워커 등록 — 캐싱 없이 등록 자체만으로 안드로이드가 완전한 PWA(WebAPK)로
+// 설치하게 하기 위함이다 (뒤로가기 히스토리 처리와 관련, 아래 exitArmed 로직 참고).
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
 if (isStandaloneApp){
   // 페이지가 뜨자마자 보이는 스플래시(#splash)를 최소 이 시간(ms) 동안은
   // 유지했다가 서서히 사라지게 한다. 스크립트 맨 위에서 바로 타이머를 걸어야
@@ -1204,7 +1211,12 @@ let exitArmedTimer = null;
 if (isStandaloneApp){
   // URL을 안 바꾸고 쌓으면 일부 안드로이드가 뒤로가기 가능한 항목으로 인식하지
   // 못하는 경우가 있어 해시를 붙여 구분되는 URL로 쌓는다 (openSession과 동일한 이유).
-  history.pushState({exitGuard:true}, '', '#exit-guard');
+  // setTimeout으로 한 틱 미루는 이유: 페이지 로드와 같은 틱에서 곧바로
+  // pushState를 부르면, WebView가 최초 내비게이션을 다 정착시키기 전이라
+  // 안드로이드 쪽 back stack에 반영이 안 되는 경우가 실기기에서 확인됐다.
+  setTimeout(()=>{
+    history.pushState({exitGuard:true}, '', '#exit-guard');
+  }, 0);
 }
 
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신

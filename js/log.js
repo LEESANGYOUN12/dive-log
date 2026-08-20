@@ -295,7 +295,8 @@ let sessions = [];        // [{id, fileName, uploadedAt, startTime, endTime, max
 let currentSessionDives = null; // 현재 열려 있는 세션의 다이빙 메타 목록
 let selectedSessionId = null;
 let contentsHistoryPushed = false; // #contents를 열 때 히스토리를 쌓았는지 (뒤로가기로 닫기 위함)
-let suppressExitCheck = false; // closeSessionView가 자체적으로 유발한 popstate인지 (종료 확인창을 건너뛰기 위함)
+let diveChartsHistoryPushed = false; // 다이빙 차트를 처음 펼칠 때 히스토리를 쌓았는지 (뒤로가기로 접기 위함)
+let suppressPopCheck = false; // closeSessionView/collapseAllDiveCharts가 자체적으로 유발한 popstate인지 (중복 처리 방지)
 
 const $ = (sel) => document.querySelector(sel);
 const fmtTime = (sec) => {
@@ -476,17 +477,25 @@ async function deleteSession(id){
 }
 
 // #contents를 닫는다 — 뒤로가기로 열렸을 때 쌓인 히스토리도 함께 정리한다.
-// fromPopstate가 true면 popstate 이벤트에 대한 반응이므로 history.back()을
-// 다시 호출하지 않는다 (그러면 무한 루프/불필요한 페이지 이탈이 된다).
+// 차트가 펼쳐진 채로 세션 전체를 닫는 경우(✕ 버튼, 세션 삭제 등) 히스토리가
+// 두 단계(차트 + #contents) 쌓여 있을 수 있어 history.go()로 한 번에 정리한다.
+// fromPopstate가 true면 popstate 이벤트에 대한 반응이라 이미 그만큼 뒤로
+// 이동한 상태이므로 추가로 되돌아가지 않는다 (그러면 무한 루프/불필요한
+// 페이지 이탈이 된다).
 function closeSessionView(fromPopstate){
   closeAllDiveCharts();
+  const hadChartLayer = diveChartsHistoryPushed;
+  diveChartsHistoryPushed = false;
   selectedSessionId = null;
   $('#contents').style.display = 'none';
   renderSessionList();
-  if (contentsHistoryPushed && !fromPopstate){
+  if (!fromPopstate){
+    const popCount = (hadChartLayer ? 1 : 0) + (contentsHistoryPushed ? 1 : 0);
     contentsHistoryPushed = false;
-    suppressExitCheck = true; // 이 back()으로 발생할 popstate는 "나가기 시도"가 아니라 정리용이다
-    history.back();
+    if (popCount > 0){
+      suppressPopCheck = true; // 이 이동으로 발생할 popstate는 정리용이라 무시한다
+      history.go(-popCount);
+    }
   } else {
     contentsHistoryPushed = false;
   }
@@ -504,6 +513,14 @@ function openSession(id){
   const s = sessions.find(x=>x.id===id);
   if (!s) return;
   closeAllDiveCharts();
+  if (diveChartsHistoryPushed){
+    // 이전 세션에서 차트를 펼쳐둔 채로 다른 세션을 선택한 경우, 쌓여있던
+    // 히스토리도 함께 정리한다. (selectedSessionId가 이미 있을 때만 가능한
+    // 상황이라 바로 아래 #contents pushState와 겹치지 않는다.)
+    diveChartsHistoryPushed = false;
+    suppressPopCheck = true;
+    history.back();
+  }
   if (selectedSessionId === null){
     history.pushState({diveLogContents:true}, '');
     contentsHistoryPushed = true;
@@ -706,18 +723,40 @@ function cleanupChartContainer(td){
   if (td._cleanupSticky) td._cleanupSticky();
   const idx = openChartContainers.indexOf(td);
   if (idx !== -1) openChartContainers.splice(idx, 1);
+  // td는 <tr class="dive-chart-row"> 안에 있다 — 그 행 자체와, 바로 앞
+  // <tr class="dive-row">의 펼침 표시(.expanded)까지 여기서 함께 정리해서
+  // closeAllDiveCharts()로 접을 때도(뒤로가기 등) 시각적으로 확실히 접히게 한다.
+  const chartRow = td.parentElement;
+  if (chartRow && chartRow.classList.contains('dive-chart-row')){
+    const diveRow = chartRow.previousElementSibling;
+    if (diveRow) diveRow.classList.remove('expanded');
+    chartRow.remove();
+  }
   syncFixedInfoBar();
 }
 function closeAllDiveCharts(){
   openChartContainers.slice().forEach(cleanupChartContainer);
 }
 
+// 펼쳐진 다이빙 차트를 전부 접는다. 뒤로가기로 쌓인 히스토리가 있으면
+// (fromPopstate가 아닐 때) 함께 정리한다 — toggleDiveChartRow가 마지막
+// 하나를 접을 때, 그리고 popstate 핸들러가 이 로직을 재사용한다.
+function collapseAllDiveCharts(fromPopstate){
+  closeAllDiveCharts();
+  if (diveChartsHistoryPushed && !fromPopstate){
+    diveChartsHistoryPushed = false;
+    suppressPopCheck = true;
+    history.back();
+  } else {
+    diveChartsHistoryPushed = false;
+  }
+}
+
 function toggleDiveChartRow(tr, d){
   const next = tr.nextElementSibling;
   if (next && next.classList.contains('dive-chart-row')){
-    cleanupChartContainer(next.querySelector('td'));
-    next.remove();
-    tr.classList.remove('expanded');
+    cleanupChartContainer(next.querySelector('td')); // 행 제거·expanded 해제까지 여기서 처리
+    if (openChartContainers.length === 0) collapseAllDiveCharts();
     return;
   }
   const records = loadDiveRecords(d.id);
@@ -731,6 +770,10 @@ function toggleDiveChartRow(tr, d){
   tr.after(chartRow);
   tr.classList.add('expanded');
   openChartContainers.push(td);
+  if (openChartContainers.length === 1){
+    history.pushState({diveChart:true}, '');
+    diveChartsHistoryPushed = true;
+  }
   syncFixedInfoBar();
   renderInlineCharts(td, records);
 }
@@ -1189,17 +1232,21 @@ $('#reset-all').addEventListener('click', async ()=>{
   toast('모두 초기화했어요');
 });
 
-// #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
-// #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
-// #contents가 이미 닫힌 상태에서 뒤로가기를 누르면 별도 처리 없이 평소
+// 뒤로가기 depth는 두 단계다: #contents(세션 상세)가 열려 있고, 그 위에
+// 다이빙 차트까지 펼쳐져 있을 수 있다. 뒤로가기를 누르면 가장 안쪽(차트)부터
+// 한 단계씩 닫히고, 둘 다 닫힌 상태에서 누르면 별도 처리 없이 평소
 // 브라우저/PWA 동작 그대로 앱을 나간다.
 window.addEventListener('popstate', ()=>{
-  if (selectedSessionId !== null){
-    closeSessionView(true);
+  if (suppressPopCheck){
+    suppressPopCheck = false; // closeSessionView/collapseAllDiveCharts가 스스로 유발한 popstate — 무시
     return;
   }
-  if (suppressExitCheck){
-    suppressExitCheck = false; // ✕ 버튼 등으로 #contents를 닫으며 스스로 유발한 popstate — 무시
+  if (diveChartsHistoryPushed){
+    collapseAllDiveCharts(true);
+    return;
+  }
+  if (selectedSessionId !== null){
+    closeSessionView(true);
   }
 });
 

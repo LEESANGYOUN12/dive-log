@@ -1219,12 +1219,16 @@ if (isStandaloneApp){
   // 안드로이드 쪽 back stack에 반영이 안 되는 경우가 실기기에서 확인됐다.
   setTimeout(()=>{
     history.pushState({exitGuard:true}, '', '#exit-guard');
+    // TEMP DEBUG — 원인 확인되면 바로 제거
+    toast('DEBUG guard pushed, historyLen=' + history.length);
   }, 0);
 }
 
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
 // #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
 window.addEventListener('popstate', ()=>{
+  // TEMP DEBUG — 원인 확인되면 바로 제거
+  alert('DEBUG popstate fired! historyLen=' + history.length + ' state=' + JSON.stringify(history.state));
   if (selectedSessionId !== null){
     closeSessionView(true);
     return;

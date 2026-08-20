@@ -4,24 +4,6 @@
 // 때마다 불필요하게 로고를 보게 하지 않는다.
 // iOS는 display-mode 미디어쿼리 대신 navigator.standalone 플래그로 판단한다.
 const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-
-// 실기기 확인 결과: 안드로이드 WebAPK는 "앱을 켠 직후 첫 뒤로가기"를
-// pushState로 뭘 쌓아놨든 상관없이 무조건 앱 종료로 처리했다(JS의 popstate까지
-// 오지도 않음). pushState 같은 same-document 이동이 아니라 진짜 주소가 바뀌는
-// 내비게이션이 한 번은 있어야 안드로이드가 정상적인 뒤로가기 스택으로
-// 인식하는 것으로 보여서, 켜지자마자 짧게 한 번 더 리로드시킨다(쿼리 마커로
-// 무한 루프 방지). 스플래시가 살짝 더 오래 보일 수 있는 대신, 그 이후부터는
-// 뒤로가기를 JS가 정상적으로 가로챌 수 있길 기대한다.
-if (isStandaloneApp && !location.search.includes('pwa=1')){
-  location.href = location.pathname + '?pwa=1' + location.hash;
-}
-
-// 서비스워커 등록 — 캐싱 없이 등록 자체만으로 안드로이드가 완전한 PWA(WebAPK)로
-// 설치하게 하기 위함이다 (뒤로가기 히스토리 처리와 관련, 아래 exitArmed 로직 참고).
-if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').catch(()=>{});
-}
-
 if (isStandaloneApp){
   // 페이지가 뜨자마자 보이는 스플래시(#splash)를 최소 이 시간(ms) 동안은
   // 유지했다가 서서히 사라지게 한다. 스크립트 맨 위에서 바로 타이머를 걸어야
@@ -523,9 +505,7 @@ function openSession(id){
   if (!s) return;
   closeAllDiveCharts();
   if (selectedSessionId === null){
-    // URL을 안 바꾸고 쌓으면 일부 안드로이드 WebView/PWA가 이걸 "진짜 뒤로가기
-    // 가능한 항목"으로 인식하지 못해서 해시를 붙여 구분되는 URL로 쌓는다.
-    history.pushState({diveLogContents:true}, '', '#session');
+    history.pushState({diveLogContents:true}, '');
     contentsHistoryPushed = true;
   }
   selectedSessionId = id;
@@ -1209,30 +1189,17 @@ $('#reset-all').addEventListener('click', async ()=>{
   toast('모두 초기화했어요');
 });
 
-// PWA(홈 화면 설치) standalone 모드에서만: 뒤로가기 두 번으로 종료하는
-// 흔한 안드로이드 패턴. JS로는 PWA를 강제 종료할 방법이 없어서(history.back()을
-// 아무리 불러도 히스토리 바닥에서는 그냥 무반응이다) "종료하시겠습니까?" 확인창
-// 대신, 첫 뒤로가기는 안내 토스트만 띄우고 가드를 다시 쌓아두는 식으로 처리한다.
-// 같은 자리에서 한 번 더(exitArmed) 뒤로가기를 누르면 이번엔 가드를 다시
-// 쌓지 않는다 — 그러면 그 다음 뒤로가기에서 정말 히스토리가 바닥나서 OS가
-// 앱을 닫아준다. 일반 브라우저 탭에서는 가드를 쌓지 않으므로 평소처럼 동작한다.
-let exitArmed = false;
-let exitArmedTimer = null;
-
+// PWA(홈 화면 설치) standalone 모드에서만: 앱을 완전히 나가는 마지막
+// 뒤로가기 앞에 확인창을 끼워 넣는다. 시작하자마자 히스토리를 하나 쌓아두고,
+// 그게 소비될 때(=더 이상 닫을 #contents도 없는 상태)를 "진짜 나가기 직전"으로
+// 본다. 일반 브라우저 탭에서는 이 가드를 쌓지 않으므로 평소처럼 동작한다.
 if (isStandaloneApp){
-  // URL을 안 바꾸고 쌓으면 일부 안드로이드가 뒤로가기 가능한 항목으로 인식하지
-  // 못하는 경우가 있어 해시를 붙여 구분되는 URL로 쌓는다 (openSession과 동일한 이유).
-  // setTimeout으로 한 틱 미루는 이유: 페이지 로드와 같은 틱에서 곧바로
-  // pushState를 부르면, WebView가 최초 내비게이션을 다 정착시키기 전이라
-  // 안드로이드 쪽 back stack에 반영이 안 되는 경우가 실기기에서 확인됐다.
-  setTimeout(()=>{
-    history.pushState({exitGuard:true}, '', '#exit-guard');
-  }, 0);
+  history.pushState({exitGuard:true}, '');
 }
 
 // #contents가 열려 있을 때 뒤로가기를 누르면 페이지를 벗어나는 대신
 // #contents를 닫는다 (openSession에서 쌓아 둔 히스토리를 여기서 소비).
-window.addEventListener('popstate', ()=>{
+window.addEventListener('popstate', async ()=>{
   if (selectedSessionId !== null){
     closeSessionView(true);
     return;
@@ -1241,16 +1208,13 @@ window.addEventListener('popstate', ()=>{
     suppressExitCheck = false; // ✕ 버튼 등으로 #contents를 닫으며 스스로 유발한 popstate — 무시
     return;
   }
-  if (!isStandaloneApp) return;
-  if (exitArmed){
-    clearTimeout(exitArmedTimer);
-    exitArmed = false;
-    return; // 가드를 다시 쌓지 않는다 — 다음 뒤로가기에서 실제로 종료되게 둔다
+  if (isStandaloneApp){
+    if (await showConfirm('앱을 종료하시겠습니까?', {okText:'종료'})){
+      history.back(); // 가드까지 소비했으니 한 번 더 뒤로 → 실제 종료
+    } else {
+      history.pushState({exitGuard:true}, ''); // 가드를 다시 쌓아 다음 뒤로가기도 잡는다
+    }
   }
-  exitArmed = true;
-  toast('뒤로가기를 한 번 더 누르면 종료돼요');
-  history.pushState({exitGuard:true}, '', '#exit-guard');
-  exitArmedTimer = setTimeout(()=>{ exitArmed = false; }, 2200);
 });
 
 // 시작할 때 한 번 실행되는 정리 작업: 지문(fingerprint)이 같은 세션들을

@@ -5,6 +5,9 @@
 // iOS는 display-mode 미디어쿼리 대신 navigator.standalone 플래그로 판단한다.
 const isStandaloneApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
+// TEMP DEBUG — 원인 확인되면 바로 제거
+alert('DEBUG isStandaloneApp=' + isStandaloneApp + ' historyLen=' + history.length);
+
 // 서비스워커 등록 — 캐싱 없이 등록 자체만으로 안드로이드가 완전한 PWA(WebAPK)로
 // 설치하게 하기 위함이다 (뒤로가기 히스토리 처리와 관련, 아래 exitArmed 로직 참고).
 if ('serviceWorker' in navigator){

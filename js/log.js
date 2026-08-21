@@ -545,11 +545,14 @@ function openSession(id){
   const maxDiveSec = currentSessionDives.length ? Math.max(...currentSessionDives.map(d=>d.durationSec)) : 0;
   $('#sess-max-dive-time').textContent = fmtTime(maxDiveSec);
   let hrSum = 0, hrCount = 0;
+  let missingRecords = false;
   currentSessionDives.forEach(d=>{
     const recs = loadDiveRecords(d.id);
     if (recs) recs.forEach(r=>{ if (r.hr != null){ hrSum += r.hr; hrCount++; } });
+    else missingRecords = true;
   });
   $('#sess-avg-hr').textContent = hrCount ? Math.round(hrSum/hrCount) + 'bpm' : '–';
+  if (missingRecords) toast('일부 다이빙 기록을 불러오지 못했어요');
 
   const tbody = $('#dive-table-body');
   tbody.innerHTML = '';

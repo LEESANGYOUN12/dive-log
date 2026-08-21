@@ -9,7 +9,7 @@
     label {font-weight: 600; background: var(--ac-01); border: none; color: #fff; display: flex; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); cursor: pointer; font-size: 13px;}
     label input {display: none;}
     label:hover {box-shadow: 0 8px 18px -8px rgba(124,92,252,.6);}
-    .install-btn {display: none; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); background: var(--purple); border: 1.5px solid var(--purple); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; display: none;
+    .install-btn {display: none; align-items: center; justify-content: center; gap: 4px; height: 36px; width: 92px; border-radius: var(--radius); background: var(--purple); border: 1.5px solid var(--purple); color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
       &.show {display: flex;}
     }
     .theme-toggle {display: flex; align-items: center; justify-content: center; height: 36px; width: 36px; border-radius: var(--radius); background: var(--surface-2); border: 1.5px solid #f6b93b; font-size: 16px; cursor: pointer;

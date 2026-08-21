@@ -692,16 +692,21 @@ const CHART_DEFS = [
 // 배치된다.
 let chartViewMode = lsGet('chartViewMode') === 'box' ? 'box' : 'list';
 // 차트 SVG는 viewBox 비율을 무시하고(preserveAspectRatio="none") 실제
-// 렌더링 너비에 맞춰 강제로 늘리거나 줄인다. 그래서 svg 내부 요소도 같이
-// 가로로만 늘어나거나 찌그러진다 — 원, 최대/최소 라벨 글자 모두 예외가
-// 아니다. x축 스케일의 역수만큼 되돌려 늘어난 만큼 다시 압축해준다.
+// 렌더링 너비/높이에 맞춰 강제로 늘리거나 줄인다. 그래서 svg 내부 요소도
+// 같이 늘어나거나 찌그러진다 — 원, 최대/최소 라벨 글자 모두 예외가 아니다.
+// 가로/세로 스케일의 역수만큼 되돌려 늘어난 만큼 다시 압축해준다(모바일
+// 브레이크포인트에서 svg.chart 높이를 줄일 때도 세로 찌그러짐이 생기므로
+// 세로 보정도 함께 한다).
 function fixMinmaxLabelScale(svgEl){
   if (!svgEl) return;
-  const scaleX = (svgEl.getBoundingClientRect().width / CHART_W) || 1;
-  const f = 1/scaleX;
+  const rect = svgEl.getBoundingClientRect();
+  const scaleX = (rect.width / CHART_W) || 1;
+  const scaleY = (rect.height / CHART_H) || 1;
+  const fx = 1/scaleX, fy = 1/scaleY;
   svgEl.querySelectorAll('.chart-minmax-label').forEach(t=>{
     const x = parseFloat(t.getAttribute('x')) || 0;
-    t.setAttribute('transform', `matrix(${f},0,0,1,${(x*(1-f)).toFixed(2)},0)`);
+    const y = parseFloat(t.getAttribute('y')) || 0;
+    t.setAttribute('transform', `matrix(${fx},0,0,${fy},${(x*(1-fx)).toFixed(2)},${(y*(1-fy)).toFixed(2)})`);
   });
 }
 
@@ -965,8 +970,11 @@ function updateInlineCrosshair(container, idx, records, geoms, chartIds){
     ch.setAttribute('x1', p.x); ch.setAttribute('x2', p.x);
     ch.style.display = '';
     if (p.y != null){
-      const scaleX = svgEl ? (svgEl.getBoundingClientRect().width / CHART_W) || 1 : 1;
+      const rect = svgEl ? svgEl.getBoundingClientRect() : null;
+      const scaleX = rect ? (rect.width / CHART_W) || 1 : 1;
+      const scaleY = rect ? (rect.height / CHART_H) || 1 : 1;
       dot.setAttribute('rx', (DOT_R/scaleX).toFixed(2));
+      dot.setAttribute('ry', (DOT_R/scaleY).toFixed(2));
       dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
       dot.style.display = '';
     } else {

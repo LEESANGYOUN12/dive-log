@@ -93,7 +93,9 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
 /* 챠트 */
 .chart-block {border-bottom: 2px dashed var(--border-1); padding: 24px 0 24px 6px; min-width: 0;}
 :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
+:has(.chart-block-wrap.box-view ) .chart-label h4 i {font-size: 13px;}
 :has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 13px;}
+:has(.chart-block-wrap.box-view ) .chart-label h4 span {font-size: 11px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 12px;  gap: 0px; padding: 0 16px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li {flex: 1;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li span {display: block;}
@@ -104,10 +106,11 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
 }
 .chart-label {color: var(--muted); margin-bottom: 8px; padding-right: 6px;}
 .chart-label h4 {font-size: 18px; }
+.chart-label h4 i {font-style: normal;}
 .chart-label h4 strong {color: var(--text); font-weight: 700;}
 .chart-label h4 span {font-size: 12px;}
 .chart-label ul {display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 8px;}
-.chart-label li span {color: var(--text); /* font-weight: 700; */}
+.chart-label li span {color: var(--text);}
 svg.chart {width: 100%; height: 140px; display: block; touch-action: pan-y;}
 svg.chart .chart-grid-line {stroke: var(--chart-grid);}
 svg.chart .chart-zero-line {stroke: var(--chart-zero-line);}

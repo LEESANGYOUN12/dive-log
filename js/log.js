@@ -681,10 +681,10 @@ function svgChart(id, color, mode){
 }
 
 const CHART_DEFS = [
-  {key:'depth', mode:'depth', colorHex:'#7c5cfc', unit:'m', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'📉 <strong>수심</strong> <span>(m)</span>'},
-  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', unit:'m/s', fmtValue:(v)=>(v>=0?'+':'')+v.toFixed(2), fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'〽️ <strong>수직 속도</strong> <span>(m/s)</span>'},
-  {key:'hr', mode:'normal', colorHex:'#ff5c77', unit:'bpm', fmtValue:(v)=>Math.round(v), fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'❤️ <strong>심박수</strong> <span>(bpm)</span>'},
-  {key:'temp', mode:'normal', colorHex:'#ff7d54', unit:'℃', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'🌡️ <strong>수온</strong> <span>(℃)</span>'},
+  {key:'depth', mode:'depth', colorHex:'#7c5cfc', unit:'m', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'m', label:'<i>📉</i> <strong>수심</strong> <span>(m)</span>'},
+  {key:'vSpeed', mode:'zero', colorHex:'#f6a623', unit:'m/s', fmtValue:(v)=>(v>=0?'+':'')+v.toFixed(2), fmt:(v)=>v==null?'–':(v>=0?'+':'')+v.toFixed(2)+'m/s', label:'<i>〽️</i> <strong>수직 속도</strong> <span>(m/s)</span>'},
+  {key:'hr', mode:'normal', colorHex:'#ff5c77', unit:'bpm', fmtValue:(v)=>Math.round(v), fmt:(v)=>v==null?'–':Math.round(v)+'bpm', label:'<i>❤️</i> <strong>심박수</strong> <span>(bpm)</span>'},
+  {key:'temp', mode:'normal', colorHex:'#ff7d54', unit:'℃', fmtValue:(v)=>v.toFixed(1), fmt:(v)=>v==null?'–':v.toFixed(1)+'℃', label:'<i>🌡️</i> <strong>수온</strong> <span>(℃)</span>'},
 ];
 
 // 현재 열려 있는 모든 다이빙의 chart-block-wrap이 공유하는 값이라, 하단

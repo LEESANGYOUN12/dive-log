@@ -596,7 +596,7 @@ function openSession(id){
 // buildChartGeometry()와 드래그 처리 코드는 화면 해상도와 무관하게 하나의
 // 단위 체계로만 계산하면 된다.
 const CHART_W = 600, CHART_H = 140;
-const DOT_R = 4.5;
+const DOT_R = 3.6;
 const PAD = {l:10, t:10, b:16};
 // 오른쪽 여백은 최소/최대값 라벨 표시 공간. 박스형은 컨테이너 실제 너비가
 // 훨씬 좁아 같은 값이라도 물리적으로 쓸 수 있는 공간이 작으므로, 리스트형/

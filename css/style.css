@@ -93,10 +93,10 @@ table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0;
 /* 챠트 */
 .chart-block {border-bottom: 2px dashed var(--border-1); padding: 24px 0 24px 6px; min-width: 0;}
 :has(.chart-block-wrap.box-view ) .chart-label {margin-bottom: 0px;}
-:has(.chart-block-wrap.box-view ) .chart-label h4 i {font-size: 11px;}
-:has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 13px;}
+:has(.chart-block-wrap.box-view ) .chart-label h4 i {font-size: 11px; top: -2px;}
+:has(.chart-block-wrap.box-view ) .chart-label h4 strong {font-size: 15px;}
 :has(.chart-block-wrap.box-view ) .chart-label h4 span {font-size: 11px;}
-:has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 12px;  gap: 0px; padding: 0 16px; margin-top: 4px;}
+:has(.chart-block-wrap.box-view ) .chart-label ul {font-size: 11px;  gap: 0px; padding: 0 16px; margin-top: 6px; margin-bottom: 2px;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li {flex: 1;}
 :has(.chart-block-wrap.box-view ) .chart-label ul li span {display: block;}
 .chart-block-wrap.box-view {display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -796,6 +796,11 @@ function toggleDiveChartRow(tr, d){
   tr.classList.add('expanded');
   openChartContainers.push(td);
   if (openChartContainers.length === 1){
+    // 불변식: diveChartsHistoryPushed는 selectedSessionId가 있을 때만
+    // true일 수 있다 — 다이빙 차트는 세션 상세 안에서만 열리기 때문.
+    // 이게 깨지면 popstate 핸들러가 히스토리 depth를 잘못 판단해서
+    // 엉뚱한 걸 닫는다(예: 차트만 접혀야 하는데 세션 전체가 닫힘).
+    console.assert(selectedSessionId !== null, 'diveChartsHistoryPushed는 selectedSessionId가 있을 때만 true여야 함');
     history.pushState({diveChart:true}, '');
     diveChartsHistoryPushed = true;
   }
@@ -1277,6 +1282,7 @@ window.addEventListener('popstate', ()=>{
     return;
   }
   if (diveChartsHistoryPushed){
+    console.assert(selectedSessionId !== null, 'diveChartsHistoryPushed는 selectedSessionId가 있을 때만 true여야 함');
     collapseAllDiveCharts(true);
     return;
   }

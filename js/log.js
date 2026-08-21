@@ -544,13 +544,30 @@ function openSession(id){
   currentSessionDives = loadSessionDives(id);
   const maxDiveSec = currentSessionDives.length ? Math.max(...currentSessionDives.map(d=>d.durationSec)) : 0;
   $('#sess-max-dive-time').textContent = fmtTime(maxDiveSec);
+  // 평균 심박수는 다이빙 메타에 캐싱된 hrSum/hrCount로 바로 계산한다 —
+  // 세션 상세를 열 때마다 모든 다이빙의 전체 records를 불러올 필요가 없다.
+  // 캐싱이 생기기 전 예전 데이터(hrSum/hrCount 없음)는 이번에 한 번만
+  // records를 읽어 계산하고, 다음에 또 안 읽어도 되게 메타에 캐싱해둔다.
   let hrSum = 0, hrCount = 0;
   let missingRecords = false;
+  let migrated = false;
   currentSessionDives.forEach(d=>{
+    if (d.hrSum != null && d.hrCount != null){
+      hrSum += d.hrSum;
+      hrCount += d.hrCount;
+      return;
+    }
     const recs = loadDiveRecords(d.id);
-    if (recs) recs.forEach(r=>{ if (r.hr != null){ hrSum += r.hr; hrCount++; } });
-    else missingRecords = true;
+    if (!recs){ missingRecords = true; return; }
+    let dHrSum = 0, dHrCount = 0;
+    recs.forEach(r=>{ if (r.hr != null){ dHrSum += r.hr; dHrCount++; } });
+    d.hrSum = dHrSum;
+    d.hrCount = dHrCount;
+    hrSum += dHrSum;
+    hrCount += dHrCount;
+    migrated = true;
   });
+  if (migrated) saveSessionDives(id, currentSessionDives);
   $('#sess-avg-hr').textContent = hrCount ? Math.round(hrSum/hrCount) + 'bpm' : '–';
   if (missingRecords) toast('일부 다이빙 기록을 불러오지 못했어요');
 
@@ -1091,11 +1108,18 @@ function handleFiles(fileList){
           }
           const diveId = 'd' + uploadedAt + '_' + seg.startIdx + '_' + Math.random().toString(36).slice(2,7);
           if (!saveDiveRecords(diveId, slice)){ storageFailed = true; return; }
+          // 세션 상세를 열 때마다 평균 심박수 계산하려고 전체 records를 다시
+          // 불러오지 않도록, 업로드 시점에 심박 합계/개수를 다이빙 메타에
+          // 캐싱해둔다 (openSession 참고).
+          let hrSum = 0, hrCount = 0;
+          slice.forEach(r=>{ if (r.hr != null){ hrSum += r.hr; hrCount++; } });
           diveMetas.push({
             id: diveId,
             startTime: slice[0].t,
             durationSec: slice[slice.length-1].t - slice[0].t,
-            maxDepth
+            maxDepth,
+            hrSum,
+            hrCount
           });
         });
 

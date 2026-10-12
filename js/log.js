@@ -484,7 +484,6 @@ async function deleteSession(id){
 // 페이지 이탈이 된다).
 function closeSessionView(fromPopstate){
   closeAllDiveCharts();
-  exitDiveSelectMode();
   const hadChartLayer = diveChartsHistoryPushed;
   diveChartsHistoryPushed = false;
   selectedSessionId = null;
@@ -510,11 +509,10 @@ const SHOW_SESSION_GPS = false;
 // 세션 상세 패널을 연다: 요약 헤더를 채우고, 모든 다이빙의 레코드를
 // 불러와서 세션 전체 평균 심박수를 계산하고, 다이빙 테이블을 채운다
 // (각 행은 클릭할 때 자기 차트를 지연 로드한다 — toggleDiveChartRow 참고).
-function openSession(id, opts){
+function openSession(id){
   const s = sessions.find(x=>x.id===id);
   if (!s) return;
   closeAllDiveCharts();
-  exitDiveSelectMode();
   if (diveChartsHistoryPushed){
     // 이전 세션에서 차트를 펼쳐둔 채로 다른 세션을 선택한 경우, 쌓여있던
     // 히스토리도 함께 정리한다. (selectedSessionId가 이미 있을 때만 가능한
@@ -578,125 +576,18 @@ function openSession(id, opts){
   currentSessionDives.forEach((d, i)=>{
     const tr = document.createElement('tr');
     tr.className = 'dive-row';
-    tr._dive = d;
     tr.innerHTML = `
-      <td class="idx"><span class="idx-num">${i+1}</span><input type="checkbox" class="idx-check" tabindex="-1" aria-label="${i+1}번 다이빙 선택"></td>
+      <td class="idx">${i+1}</td>
       <td class="time-cell">${fmtClockSec(d.startTime)}</td>
       <td class="time-cell">${fmtTime(d.durationSec)}</td>
       <td class="max-depth">${d.maxDepth.toFixed(1)} m</td>
     `;
-    tr.addEventListener('click', ()=>{
-      // 길게 누르기 직후 따라오는 click은 무시한다 (방금 체크한 걸 바로 풀지 않도록)
-      if (longPressFired){ longPressFired = false; return; }
-      if (diveSelectMode) toggleDiveRowCheck(tr);
-      else toggleDiveChartRow(tr, d);
-    });
-    attachLongPress(tr);
+    tr.addEventListener('click', ()=>toggleDiveChartRow(tr, d));
     tbody.appendChild(tr);
   });
 
   renderSessionList();
-  if (!(opts && opts.noScroll)) $('#contents').scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-/* ============================== 다이빙 행 선택·삭제 ============================== */
-// 행을 길게 누르면 선택 모드로 들어가 No 칸이 체크박스로 바뀌고, 테이블
-// 아래 삭제 바가 나타난다. 선택 모드에서는 행을 탭해도 차트가 열리지 않고
-// 체크만 토글된다. 평소엔 버튼이 보이지 않게 해서 UI를 늘리지 않는다.
-const LONG_PRESS_MS = 500;
-let diveSelectMode = false;
-let longPressFired = false; // 길게 누르기가 발동했으면 뒤따르는 click 1회를 무시한다
-
-function attachLongPress(tr){
-  let timer = null, startX = 0, startY = 0;
-  const cancel = ()=>{ clearTimeout(timer); timer = null; };
-  tr.addEventListener('pointerdown', (e)=>{
-    if (e.button !== 0) return;
-    longPressFired = false;
-    startX = e.clientX; startY = e.clientY;
-    cancel();
-    timer = setTimeout(()=>{
-      timer = null;
-      longPressFired = true;
-      if (!diveSelectMode) enterDiveSelectMode();
-      toggleDiveRowCheck(tr);
-      if (navigator.vibrate) navigator.vibrate(15);
-    }, LONG_PRESS_MS);
-  });
-  // 손가락이 조금이라도 움직이면(스크롤) 길게 누르기로 보지 않는다
-  tr.addEventListener('pointermove', (e)=>{
-    if (timer && Math.hypot(e.clientX-startX, e.clientY-startY) > 10) cancel();
-  });
-  ['pointerup','pointercancel','pointerleave'].forEach(evt=>tr.addEventListener(evt, cancel));
-  // 모바일에서 길게 누를 때 뜨는 기본 메뉴(복사 등)를 막는다
-  tr.addEventListener('contextmenu', (e)=>e.preventDefault());
-}
-
-function enterDiveSelectMode(){
-  // 펼쳐진 차트 행이 섞여 있으면 선택이 헷갈리므로 먼저 모두 접는다
-  if (openChartContainers.length) collapseAllDiveCharts();
-  diveSelectMode = true;
-  $('.dive-table').classList.add('select-mode');
-  $('#dive-select-bar').style.display = '';
-  syncDiveSelectBar();
-}
-
-function exitDiveSelectMode(){
-  diveSelectMode = false;
-  longPressFired = false;
-  const table = $('.dive-table');
-  if (table) table.classList.remove('select-mode');
-  document.querySelectorAll('#dive-table-body tr.dive-row.checked').forEach(tr=>{
-    tr.classList.remove('checked');
-    tr.querySelector('.idx-check').checked = false;
-  });
-  $('#dive-select-bar').style.display = 'none';
-}
-
-function toggleDiveRowCheck(tr){
-  const on = !tr.classList.contains('checked');
-  tr.classList.toggle('checked', on);
-  tr.querySelector('.idx-check').checked = on;
-  syncDiveSelectBar();
-}
-
-function syncDiveSelectBar(){
-  const n = document.querySelectorAll('#dive-table-body tr.dive-row.checked').length;
-  const btn = $('#dive-select-delete');
-  btn.textContent = n ? `${n}개 삭제` : '삭제';
-  btn.disabled = n === 0;
-}
-
-// 체크된 다이빙들을 삭제한다: 레코드 → 세션의 다이빙 메타 목록 → 세션 요약
-// (다이빙 횟수, 최대수심) 순으로 갱신. 다이빙이 하나도 안 남으면 세션째 지운다.
-// 세션의 지문(fingerprint)은 그대로 두므로, 같은 파일을 다시 올려도 중복으로
-// 걸러져 지운 다이빙이 되살아나지 않는다.
-async function deleteCheckedDives(){
-  const sid = selectedSessionId;
-  const checked = [...document.querySelectorAll('#dive-table-body tr.dive-row.checked')].map(tr=>tr._dive.id);
-  if (!sid || !checked.length) return;
-  const remaining = currentSessionDives.filter(d=>!checked.includes(d.id));
-  const msg = remaining.length
-    ? `선택한 다이빙 ${checked.length}개를 삭제할까요? 되돌릴 수 없어요.`
-    : `모든 다이빙을 선택했어요. 이 업로드 기록 전체를 삭제할까요? 되돌릴 수 없어요.`;
-  if (!(await showConfirm(msg, {okText:'삭제', danger:true}))) return;
-
-  checked.forEach(deleteDiveRecords);
-  if (!remaining.length){
-    lsDel('dives:'+sid);
-    sessions = sessions.filter(s=>s.id!==sid);
-    saveSessions(sessions);
-    closeSessionView();
-    toast('업로드 기록을 삭제했어요');
-    return;
-  }
-  saveSessionDives(sid, remaining);
-  const s = sessions.find(x=>x.id===sid);
-  s.diveCount = remaining.length;
-  s.maxDepth = Math.max(...remaining.map(d=>d.maxDepth));
-  saveSessions(sessions);
-  openSession(sid, {noScroll:true}); // 요약·테이블·목록을 새 데이터로 다시 그린다
-  toast(`다이빙 ${checked.length}개를 삭제했어요`);
+  $('#contents').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 /* ============================== 차트 렌더링 ============================== */
@@ -1364,9 +1255,6 @@ const dropzone = $('#dropzone');
 dropzone.addEventListener('drop', e=>{
   if (e.dataTransfer.files && e.dataTransfer.files.length) handleFiles(e.dataTransfer.files);
 });
-
-$('#dive-select-cancel').addEventListener('click', exitDiveSelectMode);
-$('#dive-select-delete').addEventListener('click', deleteCheckedDives);
 
 $('#close-session').addEventListener('click', ()=>{
   closeSessionView();

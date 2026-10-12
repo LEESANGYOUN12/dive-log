@@ -88,21 +88,6 @@ table.dive-table td.idx {color: var(--muted-2); font-weight: 600;}
 table.dive-table td.max-depth {color: var(--purple); font-weight: 700;}
 table.dive-table td.time-cell {color: var(--muted);}
 table.dive-table tr.dive-row.expanded td {background: var(--bg); border-bottom-color: var(--border-2);}
-/* 다이빙 행 선택 모드 (길게 누르기) — 평소엔 번호, 선택 모드에선 체크박스 */
-table.dive-table tr.dive-row {-webkit-touch-callout: none; -webkit-user-select: none; user-select: none;}
-table.dive-table td.idx .idx-check {display: none; width: 16px; height: 16px; margin: 0; appearance: auto; accent-color: var(--ac-01); pointer-events: none; vertical-align: middle;
-  :root[data-theme="dark"] & {color-scheme: dark;}
-}
-table.dive-table.select-mode td.idx .idx-num {display: none;}
-table.dive-table.select-mode td.idx .idx-check {display: inline-block;}
-table.dive-table.select-mode tr.dive-row.checked td {background: var(--purple-light);}
-.dive-select-bar {display: flex; gap: 8px; margin-top: 12px;
-  button {flex: 1; width: auto; height: 40px; border-radius: var(--radius); font-size: 13px; font-weight: 600;}
-  #dive-select-cancel {background: var(--surface-2); color: var(--text-secondary); border: 1px solid var(--border-2);}
-  #dive-select-delete {background: var(--coral); color: #fff;
-    &:disabled {opacity: .45; cursor: default;}
-  }
-}
 table.dive-table tr.dive-chart-row td {background: var(--surface-2); padding: 0; border-bottom: 1px solid rgba(30,20,60,.05);}
 
 /* 챠트 */

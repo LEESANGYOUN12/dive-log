@@ -201,6 +201,10 @@ function extractRecords(messages){
 // 나눈다. 물 위 구간까지 포함된 하나의 .fit 파일이 여러 개의 다이빙 항목이
 // 되는 이유가 이것이다. `records`에 대한 [{startIdx, endIdx}] 인덱스 범위를
 // 반환한다.
+// 최대수심이 이 값(미터) 이하인 구간은 다이빙으로 보지 않는다(수면에서 잠깐
+// 잠긴 것 등). 업로드할 때(segmentDives)와 앱을 열 때 기존 기록 정리
+// (removeShallowDives) 둘 다 이 기준을 쓴다.
+const MIN_MAX_DEPTH = 1;
 function segmentDives(records){
   const hasDepth = records.some(r=>r.depth != null);
   if (!hasDepth || records.length === 0){
@@ -225,6 +229,12 @@ function segmentDives(records){
   if (inDive) raw.push({startIdx:start, endIdx:lastUnderwater});
   return raw
     .filter(d => records[d.endIdx].t - records[d.startIdx].t >= 3) // 3초 미만인 짧은 잡음은 제외
+    .filter(d => {
+      // 최대수심 1m 이하인 얕은 구간은 제외
+      let max = 0;
+      for (let i=d.startIdx;i<=d.endIdx;i++) max = Math.max(max, records[i].depth ?? 0);
+      return max > MIN_MAX_DEPTH;
+    })
     .map(d => ({
       // 앞뒤로 샘플 2개씩 여유를 둬서, 차트가 THRESH 지점에서 뚝 끊기지
       // 않고 수면 진입/이탈 구간도 살짝 보이게 한다.
@@ -1319,11 +1329,45 @@ function dedupeExistingSessions(){
   return toRemove.length;
 }
 
-// 앱 진입점: localStorage에 있던 데이터를 불러오고, 남아있던 중복을
-// 조용히 정리한 뒤 첫 렌더링을 한다.
+// 시작할 때 한 번 실행되는 정리 작업: 1m 이하 필터(MIN_MAX_DEPTH)가 생기기
+// 전에 저장된 기록에서 최대수심 1m 이하인 다이빙을 지운다. 다이빙 메타에
+// 저장된 maxDepth만 보므로 전체 레코드를 불러오지 않아 가볍다.
+// maxDepth가 0인 항목은 수심 데이터가 아예 없는 기록(segmentDives에서 전체를
+// 하나로 묶은 것)이라 업로드 때와 똑같이 남겨둔다.
+// 다이빙이 하나도 안 남는 세션은 세션째 지운다. 지운 다이빙 개수를 반환한다.
+function removeShallowDives(){
+  let removedDives = 0;
+  const emptySessionIds = [];
+  sessions.forEach(s=>{
+    const dives = loadSessionDives(s.id);
+    const shallow = dives.filter(d=>d.maxDepth > 0 && d.maxDepth <= MIN_MAX_DEPTH);
+    if (shallow.length === 0) return;
+    shallow.forEach(d=>deleteDiveRecords(d.id));
+    removedDives += shallow.length;
+    const remaining = dives.filter(d=>!shallow.includes(d));
+    if (remaining.length === 0){
+      lsDel('dives:'+s.id);
+      emptySessionIds.push(s.id);
+      return;
+    }
+    saveSessionDives(s.id, remaining);
+    s.diveCount = remaining.length;
+    s.maxDepth = Math.max(...remaining.map(d=>d.maxDepth));
+  });
+  if (removedDives === 0) return 0;
+  // 지문(fingerprint)이 담긴 세션 자체는, 다이빙이 남아 있으면 그대로 둔다 —
+  // 같은 파일을 다시 올려도 중복으로 걸러진다.
+  sessions = sessions.filter(s=>!emptySessionIds.includes(s.id));
+  saveSessions(sessions);
+  return removedDives;
+}
+
+// 앱 진입점: localStorage에 있던 데이터를 불러오고, 남아있던 중복과 1m 이하
+// 다이빙을 조용히 정리한 뒤 첫 렌더링을 한다.
 (function init(){
   sessions = loadSessions();
   const removed = dedupeExistingSessions();
+  removeShallowDives(); // 알림 없이 조용히 정리한다
   renderSessionList();
   if (removed > 0) toast(removed + '개의 중복 업로드를 정리했어요');
 })();
